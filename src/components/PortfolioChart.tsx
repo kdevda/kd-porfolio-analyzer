@@ -17,6 +17,7 @@ import {
 import { InvestmentSchedule } from "@/types";
 import { formatCurrency } from "@/lib/calculations";
 import BlurBackground from "./ui/BlurBackground";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PortfolioChartProps {
   data: InvestmentSchedule[];
@@ -45,6 +46,8 @@ const CustomTooltip = ({
 };
 
 const PortfolioChart = ({ data }: PortfolioChartProps) => {
+  const isMobile = useIsMobile();
+  
   // Transform data for the chart
   const chartData = data.map((item) => ({
     date: item.date,
@@ -70,46 +73,54 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
   const tickInterval = calculateTickInterval(chartData);
 
   return (
-    <BlurBackground className="p-6 animate-fade-in h-[400px]">
-      <h2 className="text-2xl font-medium text-gray-800 mb-6">Portfolio Growth</h2>
-      <ResponsiveContainer width="100%" height="80%">
-        <AreaChart
-          data={chartData}
-          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis 
-            dataKey="date" 
-            tickFormatter={formatXAxis} 
-            interval={tickInterval}
-            tick={{ fontSize: 12 }}
-          />
-          <YAxis 
-            tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-            tick={{ fontSize: 12 }}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Area
-            type="monotone"
-            dataKey="invested"
-            stackId="1"
-            stroke="#42A5F5"
-            fill="#90CAF9"
-            animationDuration={1500}
-            isAnimationActive={true}
-          />
-          <Area
-            type="monotone"
-            dataKey="value"
-            stackId="2"
-            stroke="#1E90FF"
-            fill="#1E90FF"
-            fillOpacity={0.5}
-            animationDuration={1500}
-            isAnimationActive={true}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+    <BlurBackground className="p-4 md:p-6 animate-fade-in h-full">
+      <h2 className="text-xl md:text-2xl font-medium text-gray-800 mb-4">Portfolio Growth</h2>
+      <div className="h-[400px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart
+            data={chartData}
+            margin={{ 
+              top: 10, 
+              right: isMobile ? 10 : 30, 
+              left: isMobile ? 0 : 10, 
+              bottom: 0 
+            }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <XAxis 
+              dataKey="date" 
+              tickFormatter={formatXAxis} 
+              interval={tickInterval}
+              tick={{ fontSize: isMobile ? 10 : 12 }}
+            />
+            <YAxis 
+              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+              tick={{ fontSize: isMobile ? 10 : 12 }}
+              width={isMobile ? 40 : 60}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Area
+              type="monotone"
+              dataKey="invested"
+              stackId="1"
+              stroke="#42A5F5"
+              fill="#90CAF9"
+              animationDuration={1500}
+              isAnimationActive={true}
+            />
+            <Area
+              type="monotone"
+              dataKey="value"
+              stackId="2"
+              stroke="#1E90FF"
+              fill="#1E90FF"
+              fillOpacity={0.5}
+              animationDuration={1500}
+              isAnimationActive={true}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
     </BlurBackground>
   );
 };

@@ -4,6 +4,7 @@ import { PortfolioPerformance } from "@/types";
 import { formatCurrency, formatPercentage } from "@/lib/calculations";
 import BlurBackground from "./ui/BlurBackground";
 import { CircleCheck, TrendingUp, DollarSign, ArrowUpRight, Calendar } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PerformanceMetricsProps {
   performance: PortfolioPerformance;
@@ -12,6 +13,7 @@ interface PerformanceMetricsProps {
 
 const PerformanceMetrics = ({ performance, stockSymbol }: PerformanceMetricsProps) => {
   const isPositive = performance.totalReturn >= 0;
+  const isMobile = useIsMobile();
   
   const metricsData = [
     {
@@ -53,9 +55,9 @@ const PerformanceMetrics = ({ performance, stockSymbol }: PerformanceMetricsProp
   ];
 
   return (
-    <BlurBackground className="p-6 animate-fade-in">
+    <BlurBackground className="p-4 md:p-6 animate-fade-in">
       <div className="mb-4">
-        <h2 className="text-2xl font-medium text-gray-800">
+        <h2 className="text-xl md:text-2xl font-medium text-gray-800">
           Performance Summary: {stockSymbol}
         </h2>
         <p className="text-gray-500">
@@ -63,11 +65,11 @@ const PerformanceMetrics = ({ performance, stockSymbol }: PerformanceMetricsProp
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+      <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-3 md:grid-cols-5'} gap-3 md:gap-4 mt-4`}>
         {metricsData.map((metric, index) => (
           <div
             key={index}
-            className={`p-4 rounded-lg border card-hover ${
+            className={`p-3 md:p-4 rounded-lg border card-hover ${
               metric.isHighlighted
                 ? metric.isPositive
                   ? "border-portfolio-profit/30 bg-portfolio-profit/5"
@@ -77,9 +79,9 @@ const PerformanceMetrics = ({ performance, stockSymbol }: PerformanceMetricsProp
           >
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-500">{metric.title}</p>
+                <p className="text-xs md:text-sm text-gray-500">{metric.title}</p>
                 <p
-                  className={`text-xl font-semibold ${
+                  className={`text-sm md:text-xl font-semibold ${
                     metric.isHighlighted
                       ? metric.isPositive
                         ? "text-portfolio-profit"
@@ -89,9 +91,9 @@ const PerformanceMetrics = ({ performance, stockSymbol }: PerformanceMetricsProp
                 >
                   {metric.value}
                 </p>
-                <p className="text-xs text-gray-400 mt-1">{metric.subtitle}</p>
+                <p className="text-xs text-gray-400 mt-1 hidden md:block">{metric.subtitle}</p>
               </div>
-              <div className="bg-gray-100 p-2 rounded-full">{metric.icon}</div>
+              <div className="bg-gray-100 p-1 md:p-2 rounded-full">{metric.icon}</div>
             </div>
           </div>
         ))}

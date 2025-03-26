@@ -2,34 +2,76 @@
 import { StockData } from "@/types";
 import { toast } from "@/hooks/use-toast";
 
-// Simulated historical data API (would normally be a real API call)
+// Yahoo Finance API endpoint
+const BASE_URL = "https://query1.finance.yahoo.com/v8/finance/chart/";
+
 export const fetchStockData = async (
   symbol: string,
   startDate: string,
   endDate: string
 ): Promise<StockData[]> => {
   try {
-    // For development purposes, we're simulating an API call
-    // In production, this would be replaced with a real backend API call to yfinance
     console.log(`Fetching data for ${symbol} from ${startDate} to ${endDate}`);
     
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network request
+    // Convert dates to UNIX timestamps (seconds)
+    const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
+    const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000);
     
-    // Generate mock data for demonstration
-    const data = generateMockStockData(symbol, startDate, endDate);
-    return data;
+    // Build the Yahoo Finance API URL
+    const url = `${BASE_URL}${symbol}?period1=${startTimestamp}&period2=${endTimestamp}&interval=1d&includePrePost=false`;
+    
+    // Set up CORS proxy
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+    
+    const response = await fetch(proxyUrl);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    // Check if we have valid data
+    if (!data.chart || !data.chart.result || data.chart.result.length === 0) {
+      throw new Error("Invalid data received from Yahoo Finance");
+    }
+    
+    const result = data.chart.result[0];
+    const timestamps = result.timestamp;
+    const quotes = result.indicators.quote[0];
+    
+    if (!timestamps || !quotes || !quotes.close) {
+      throw new Error("Missing timestamp or price data");
+    }
+    
+    // Process the data
+    const stockData: StockData[] = [];
+    for (let i = 0; i < timestamps.length; i++) {
+      if (quotes.close[i] !== null) {
+        const date = new Date(timestamps[i] * 1000);
+        stockData.push({
+          date: date.toISOString().split("T")[0],
+          price: parseFloat(quotes.close[i].toFixed(2)),
+        });
+      }
+    }
+    
+    return stockData;
   } catch (error) {
     console.error("Error fetching stock data:", error);
+    
+    // Fallback to mock data in case of errors (for development)
     toast({
       title: "Error fetching data",
-      description: "Could not retrieve stock data. Please try again.",
+      description: "Using simulated data due to API issues. Please try again later.",
       variant: "destructive",
     });
-    throw error;
+    
+    return generateMockStockData(symbol, startDate, endDate);
   }
 };
 
-// Mock data generator (for demo purposes)
+// Mock data generator (as fallback when API fails)
 const generateMockStockData = (
   symbol: string,
   startDate: string,

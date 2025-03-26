@@ -29,3 +29,9 @@ export interface InvestmentFormData {
   frequency: "daily" | "weekly" | "monthly";
   amount: number;
 }
+
+export interface RouteParams {
+  formData?: InvestmentFormData;
+  schedule?: InvestmentSchedule[];
+  performance?: PortfolioPerformance;
+}
