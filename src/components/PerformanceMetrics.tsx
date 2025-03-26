@@ -9,11 +9,20 @@ import { useIsMobile } from "@/hooks/use-mobile";
 interface PerformanceMetricsProps {
   performance: PortfolioPerformance;
   stockSymbol: string;
+  hasDividendData?: boolean;
 }
 
-const PerformanceMetrics = ({ performance, stockSymbol }: PerformanceMetricsProps) => {
+const PerformanceMetrics = ({ performance, stockSymbol, hasDividendData = false }: PerformanceMetricsProps) => {
   const isPositive = performance.totalReturn >= 0;
   const isMobile = useIsMobile();
+  
+  const dividendValue = hasDividendData 
+    ? formatCurrency(performance.dividendsReceived || 0)
+    : "Not available";
+  
+  const dividendSubtitle = hasDividendData 
+    ? "Total dividends" 
+    : "Not a dividend-paying stock";
   
   const metricsData = [
     {
@@ -46,11 +55,11 @@ const PerformanceMetrics = ({ performance, stockSymbol }: PerformanceMetricsProp
     },
     {
       title: "Dividends Received",
-      value: formatCurrency(performance.dividendsReceived || 0),
+      value: dividendValue,
       icon: <Gift className="h-4 w-4 md:h-5 md:w-5 text-gray-700" />,
-      subtitle: "Total dividends",
+      subtitle: dividendSubtitle,
       isHighlighted: true,
-      isPositive: true,
+      isPositive: hasDividendData,
     },
   ];
 

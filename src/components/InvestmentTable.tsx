@@ -49,10 +49,10 @@ const InvestmentTable = ({ data }: InvestmentTableProps) => {
               </TableHeader>
               <TableBody>
                 {displayData.map((item, index) => (
-                  <TableRow key={index}>
+                  <TableRow key={index} className={item.dividend ? "bg-blue-50" : ""}>
                     <TableCell>{item.date}</TableCell>
                     <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{formatCurrency(item.price)}</TableCell>
-                    <TableCell>{formatCurrency(item.amount)}</TableCell>
+                    <TableCell>{item.dividend ? `${formatCurrency(item.dividend)} (Div)` : formatCurrency(item.amount)}</TableCell>
                     <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{item.sharesPurchased.toFixed(4)}</TableCell>
                     <TableCell>{item.totalShares.toFixed(4)}</TableCell>
                     <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{formatCurrency(item.totalInvested)}</TableCell>

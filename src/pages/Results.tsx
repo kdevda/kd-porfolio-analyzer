@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { InvestmentFormData, InvestmentSchedule, PortfolioPerformance } from "@/types";
@@ -25,6 +24,7 @@ const Results = () => {
   const [stockData, setStockData] = useState<any[]>([]);
   const [reinvestDividends, setReinvestDividends] = useState(false);
   const [isRecalculating, setIsRecalculating] = useState(false);
+  const [hasDividendData, setHasDividendData] = useState(false);
   
   // Scroll to top when component mounts
   useEffect(() => {
@@ -37,7 +37,13 @@ const Results = () => {
     if (initialFormData) setFormData({ ...initialFormData, reinvestDividends: false });
     if (initialSchedule) setSchedule(initialSchedule);
     if (initialPerformance) setPerformance(initialPerformance);
-    if (initialStockData) setStockData(initialStockData);
+    if (initialStockData) {
+      setStockData(initialStockData);
+      
+      // Check if any entry has dividend data
+      const hasDividends = initialStockData.some((entry: any) => entry.dividend && entry.dividend > 0);
+      setHasDividendData(hasDividends);
+    }
     
     if (!initialFormData || !initialSchedule || !initialPerformance) {
       navigate("/");
@@ -98,14 +104,12 @@ const Results = () => {
     return 'bg-gradient-to-br from-gray-50 to-gray-100';
   };
 
-  // Calculate annualized return for specific time periods
   const getForwardProjection = () => {
     if (!performance) return null;
     
     const { annualizedReturn, totalInvested } = performance;
     const monthlyInvestment = formData.amount;
     
-    // Project future balances
     const projections = [
       { 
         period: "1 Year", 
@@ -127,19 +131,16 @@ const Results = () => {
     return projections;
   };
   
-  // Calculate future value with additional contributions
   const calculateFutureValue = (
     principal: number, 
     annualRate: number, 
     years: number, 
     yearlyContribution: number
   ) => {
-    if (annualRate <= -1) return principal + (yearlyContribution * years); // Handle extreme negative returns
+    if (annualRate <= -1) return principal + (yearlyContribution * years);
     
-    // Future value of principal
     const futureValueOfPrincipal = principal * Math.pow(1 + annualRate, years);
     
-    // Future value of regular additions (if rate is not 0)
     let futureValueOfAdditions = 0;
     if (annualRate !== 0) {
       futureValueOfAdditions = yearlyContribution * (Math.pow(1 + annualRate, years) - 1) / annualRate;
@@ -152,11 +153,9 @@ const Results = () => {
   
   const projections = getForwardProjection();
   
-  // Calculate DCA effectiveness
   const dcaEffectiveness = () => {
     if (schedule.length < 2) return null;
     
-    // Find highest and lowest purchase prices
     const prices = schedule.map(entry => entry.price);
     const highestPrice = Math.max(...prices);
     const lowestPrice = Math.min(...prices);
@@ -178,18 +177,16 @@ const Results = () => {
   };
   
   const dcaInsight = dcaEffectiveness();
-
-  // Calculate time in market in years and months
+  
   const calculateTimeInMarket = () => {
     if (schedule.length < 2) return { investmentDates: 0, months: 0, years: 0 };
     
     const firstDate = new Date(schedule[0].date);
     const lastDate = new Date(schedule[schedule.length - 1].date);
     
-    // Calculate total days
     const totalDays = (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24);
     const years = totalDays / 365;
-    const months = totalDays / 30.44; // average days in a month
+    const months = totalDays / 30.44;
     
     return {
       investmentDates: schedule.length,
@@ -220,7 +217,8 @@ const Results = () => {
         {performance && formData && (
           <PerformanceMetrics 
             performance={performance} 
-            stockSymbol={formData.symbol} 
+            stockSymbol={formData.symbol}
+            hasDividendData={hasDividendData}
           />
         )}
         
