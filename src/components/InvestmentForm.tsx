@@ -65,7 +65,7 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
     try {
       setIsSearching(true);
       const results = await searchStocks(query);
-      setStockSearchResults(results);
+      setStockSearchResults(results || []); // Ensure we always have an array
     } catch (error) {
       console.error("Error searching stocks:", error);
       setStockSearchResults([]);
@@ -149,7 +149,7 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
                       {isSearching ? "Searching..." : "No stocks found."}
                     </CommandEmpty>
                     
-                    {stockSearchQuery.length < 2 && (
+                    {stockSearchQuery.length < 2 && popularStocks && (
                       <CommandGroup heading="Popular Stocks">
                         {popularStocks.map((stock) => (
                           <CommandItem
@@ -170,7 +170,7 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
                       </CommandGroup>
                     )}
                     
-                    {stockSearchResults.length > 0 && (
+                    {stockSearchResults && stockSearchResults.length > 0 && (
                       <CommandGroup heading="Search Results">
                         {stockSearchResults.map((stock) => (
                           <CommandItem
