@@ -6,15 +6,19 @@ export const generateInvestmentSchedule = (
   formData: InvestmentFormData,
   stockData: StockData[]
 ): InvestmentSchedule[] => {
-  const { startDate, endDate, frequency, amount } = formData;
+  const { startDate, endDate, frequency, amount, reinvestDividends } = formData;
   const schedule: InvestmentSchedule[] = [];
   let totalShares = 0;
   let totalInvested = 0;
+  let cumulativeDividends = 0;
   
-  // Create a map of dates to prices for quick lookup
-  const priceMap = new Map<string, number>();
+  // Create a map of dates to prices and dividends for quick lookup
+  const dataMap = new Map<string, { price: number, dividend?: number }>();
   stockData.forEach(data => {
-    priceMap.set(data.date, data.price);
+    dataMap.set(data.date, { 
+      price: data.price,
+      dividend: data.dividend || 0
+    });
   });
   
   // Generate investment dates based on frequency
@@ -22,25 +26,40 @@ export const generateInvestmentSchedule = (
   
   // Fill the schedule
   investmentDates.forEach(date => {
-    const price = priceMap.get(date);
+    const data = dataMap.get(date);
     
     // Skip if no price data for this date
-    if (!price) return;
+    if (!data || !data.price) return;
+    
+    const price = data.price;
+    const dividend = data.dividend || 0;
+    
+    // Calculate dividend amount based on current shares
+    const dividendAmount = totalShares * dividend;
+    cumulativeDividends += dividendAmount;
+    
+    // Determine amount to invest (include reinvested dividends if enabled)
+    let investmentAmount = amount;
+    if (reinvestDividends && dividendAmount > 0) {
+      investmentAmount += dividendAmount;
+    }
     
     // Calculate shares purchased (round to 6 decimal places for accuracy)
-    const sharesPurchased = parseFloat((amount / price).toFixed(6));
+    const sharesPurchased = parseFloat((investmentAmount / price).toFixed(6));
     totalShares += sharesPurchased;
-    totalInvested += amount;
+    totalInvested += amount; // We only count the regular investment in totalInvested
     const currentValue = parseFloat((totalShares * price).toFixed(2));
     
     schedule.push({
       date,
-      amount,
+      amount: investmentAmount,
       sharesPurchased,
       price,
       totalShares,
       totalInvested,
       currentValue,
+      dividend,
+      cumulativeDividends
     });
   });
   
@@ -57,12 +76,16 @@ export const calculatePerformance = (
       finalValue: 0,
       totalReturn: 0,
       percentageReturn: 0,
-      annualizedReturn: 0
+      annualizedReturn: 0,
+      dividendsReceived: 0
     };
   }
   
   const totalInvested = schedule[schedule.length - 1].totalInvested;
   const finalValue = schedule[schedule.length - 1].currentValue;
+  const dividendsReceived = schedule[schedule.length - 1].cumulativeDividends || 0;
+  
+  // Total return includes dividends whether they were reinvested or not
   const totalReturn = parseFloat((finalValue - totalInvested).toFixed(2));
   const percentageReturn = parseFloat(((totalReturn / totalInvested) * 100).toFixed(2));
   
@@ -84,7 +107,8 @@ export const calculatePerformance = (
     finalValue,
     totalReturn,
     percentageReturn,
-    annualizedReturn
+    annualizedReturn,
+    dividendsReceived
   };
 };
 
@@ -137,7 +161,7 @@ function getInvestmentDates(
   }
   
   return dates;
-}
+};
 
 // Format currency values
 export const formatCurrency = (value: number): string => {

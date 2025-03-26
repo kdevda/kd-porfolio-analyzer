@@ -1,11 +1,16 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { InvestmentFormData } from "@/types";
+import { InvestmentFormData, StockInfo } from "@/types";
 import BlurBackground from "./ui/BlurBackground";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check, ChevronsUpDown, Search } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { searchStocks } from "@/lib/api";
 
 interface InvestmentFormProps {
   onSubmit: (data: InvestmentFormData) => void;
@@ -14,16 +19,20 @@ interface InvestmentFormProps {
 }
 
 const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProps) => {
-  const [formData, setFormData] = React.useState<InvestmentFormData>({
+  const [formData, setFormData] = useState<InvestmentFormData>({
     symbol: "",
     startDate: "",
     endDate: "",
     frequency: "monthly",
     amount: 0,
   });
+  const [open, setOpen] = useState(false);
+  const [stockSearchQuery, setStockSearchQuery] = useState("");
+  const [stockSearchResults, setStockSearchResults] = useState<StockInfo[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Initialize form with initialData if provided
-  React.useEffect(() => {
+  useEffect(() => {
     if (initialData) {
       setFormData(initialData);
     }
@@ -40,6 +49,31 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
     setFormData((prev) => ({ ...prev, frequency: value as "daily" | "weekly" | "monthly" }));
   };
 
+  const handleStockSelect = (symbol: string) => {
+    setFormData((prev) => ({ ...prev, symbol }));
+    setOpen(false);
+  };
+
+  const handleStockSearch = async (query: string) => {
+    setStockSearchQuery(query);
+    
+    if (query.length < 2) {
+      setStockSearchResults([]);
+      return;
+    }
+    
+    try {
+      setIsSearching(true);
+      const results = await searchStocks(query);
+      setStockSearchResults(results);
+    } catch (error) {
+      console.error("Error searching stocks:", error);
+      setStockSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
@@ -49,7 +83,7 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
   const today = new Date().toISOString().split("T")[0];
 
   // Set default dates if not provided
-  React.useEffect(() => {
+  useEffect(() => {
     if (!formData.endDate) {
       setFormData((prev) => ({ ...prev, endDate: today }));
     }
@@ -65,8 +99,20 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
     }
   }, []);
 
+  // Popular stocks for quick selection
+  const popularStocks = [
+    { symbol: "AAPL", name: "Apple Inc." },
+    { symbol: "MSFT", name: "Microsoft Corporation" },
+    { symbol: "GOOGL", name: "Alphabet Inc." },
+    { symbol: "AMZN", name: "Amazon.com Inc." },
+    { symbol: "TSLA", name: "Tesla, Inc." },
+    { symbol: "SPY", name: "SPDR S&P 500 ETF Trust" },
+    { symbol: "QQQ", name: "Invesco QQQ Trust" },
+    { symbol: "VOO", name: "Vanguard S&P 500 ETF" }
+  ];
+
   return (
-    <BlurBackground className="p-6 animate-fade-in max-w-3xl mx-auto">
+    <BlurBackground className="p-6 animate-fade-in max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-6">
           <h2 className="text-2xl font-medium text-gray-800">Investment Parameters</h2>
@@ -74,15 +120,79 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="symbol">Stock Symbol</Label>
-              <Input
-                id="symbol"
-                name="symbol"
-                placeholder="AAPL"
-                value={formData.symbol}
-                onChange={handleChange}
-                required
-                className="transition-all duration-300 focus:ring-gray-800 focus:border-gray-800"
-              />
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-full justify-between text-left font-normal"
+                  >
+                    {formData.symbol
+                      ? stockSearchResults.find((stock) => stock.symbol === formData.symbol)?.symbol || formData.symbol
+                      : "Select stock..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <div className="flex items-center border-b px-3">
+                      <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                      <CommandInput 
+                        placeholder="Search stock..." 
+                        className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                        value={stockSearchQuery}
+                        onValueChange={handleStockSearch}
+                      />
+                    </div>
+                    <CommandEmpty>
+                      {isSearching ? "Searching..." : "No stocks found."}
+                    </CommandEmpty>
+                    
+                    {stockSearchQuery.length < 2 && (
+                      <CommandGroup heading="Popular Stocks">
+                        {popularStocks.map((stock) => (
+                          <CommandItem
+                            key={stock.symbol}
+                            value={stock.symbol}
+                            onSelect={handleStockSelect}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                formData.symbol === stock.symbol ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <span className="font-medium">{stock.symbol}</span>
+                            <span className="ml-2 text-gray-500 text-xs">{stock.name}</span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    )}
+                    
+                    {stockSearchResults.length > 0 && (
+                      <CommandGroup heading="Search Results">
+                        {stockSearchResults.map((stock) => (
+                          <CommandItem
+                            key={stock.symbol}
+                            value={stock.symbol}
+                            onSelect={handleStockSelect}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                formData.symbol === stock.symbol ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <span className="font-medium">{stock.symbol}</span>
+                            <span className="ml-2 text-gray-500 text-xs">{stock.name}</span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    )}
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             
             <div className="space-y-2">
@@ -151,7 +261,7 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
         <Button
           type="submit"
           className="w-full bg-black hover:bg-gray-800 text-white transition-all"
-          disabled={isLoading}
+          disabled={isLoading || !formData.symbol}
         >
           {isLoading ? (
             <div className="flex items-center space-x-2">

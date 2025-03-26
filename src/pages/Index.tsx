@@ -64,7 +64,8 @@ const Index = () => {
         state: {
           formData: data,
           schedule: investmentSchedule,
-          performance: performanceMetrics
+          performance: performanceMetrics,
+          stockData: fetchedData
         }
       });
       

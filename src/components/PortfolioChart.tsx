@@ -33,10 +33,10 @@ const CustomTooltip = ({
       <BlurBackground className="p-3 text-xs">
         <p className="font-medium">{label}</p>
         <p className="text-gray-800">
-          Value: {formatCurrency(Number(payload[0].value))}
+          Portfolio Value: {formatCurrency(Number(payload[1].value))}
         </p>
         <p className="text-gray-600">
-          Invested: {formatCurrency(Number(payload[1].value))}
+          Amount Invested: {formatCurrency(Number(payload[0].value))}
         </p>
       </BlurBackground>
     );

@@ -3,7 +3,7 @@ import React from "react";
 import { PortfolioPerformance } from "@/types";
 import { formatCurrency, formatPercentage } from "@/lib/calculations";
 import BlurBackground from "./ui/BlurBackground";
-import { CircleCheck, TrendingUp, DollarSign, ArrowUpRight, Calendar } from "lucide-react";
+import { CircleCheck, TrendingUp, DollarSign, ArrowUpRight, Gift } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PerformanceMetricsProps {
@@ -45,12 +45,12 @@ const PerformanceMetrics = ({ performance, stockSymbol }: PerformanceMetricsProp
       isPositive,
     },
     {
-      title: "Annualized Return",
-      value: formatPercentage(performance.annualizedReturn),
-      icon: <Calendar className="h-5 w-5 text-gray-700" />,
-      subtitle: "Yearly average",
+      title: "Dividends Received",
+      value: formatCurrency(performance.dividendsReceived || 0),
+      icon: <Gift className="h-5 w-5 text-gray-700" />,
+      subtitle: "Total dividends",
       isHighlighted: true,
-      isPositive,
+      isPositive: true,
     },
   ];
 
