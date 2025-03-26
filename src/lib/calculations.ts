@@ -126,15 +126,15 @@ export const generateInvestmentSchedule = (
       }
       
       // Only create dividend entries if reinvestDividends is enabled
-if (reinvestDividends) {
-  // Get the shares owned from the latest entry before this dividend date
-  const sharesOwned = latestEntryBeforeDividend.totalShares;
-
-  // Calculate the dividend amount based on the shares owned
-  const dividendAmount = parseFloat((sharesOwned * dividend).toFixed(2));
-
-  // Add dividend amount to cumulative dividends
-  cumulativeDividends += dividendAmount;
+      if (reinvestDividends) {
+        // Get the shares owned from the latest entry before this dividend date
+        const sharesOwned = latestEntryBeforeDividend.totalShares;
+      
+        // Calculate the dividend amount based on the shares owned
+        const dividendAmount = parseFloat((sharesOwned * dividend).toFixed(2));
+      
+        // Add dividend amount to cumulative dividends
+        cumulativeDividends += dividendAmount;
 
         if (dividendAmount > 0) {
           // Calculate how many shares can be purchased with the dividend
