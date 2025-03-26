@@ -6,9 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InvestmentFormData, StockInfo } from "@/types";
 import BlurBackground from "./ui/BlurBackground";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, ChevronsUpDown, Search } from "lucide-react";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { searchStocks } from "@/lib/api";
 
@@ -137,59 +137,60 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
                 <PopoverContent className="w-full p-0">
                   <Command>
                     <div className="flex items-center border-b px-3">
-                      <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                      <CommandInput 
-                        placeholder="Search stock..." 
+                      <Input
+                        placeholder="Search stock..."
                         className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
                         value={stockSearchQuery}
-                        onValueChange={handleStockSearch}
+                        onChange={(e) => handleStockSearch(e.target.value)}
                       />
                     </div>
-                    <CommandEmpty>
-                      {isSearching ? "Searching..." : "No stocks found."}
-                    </CommandEmpty>
-                    
-                    {stockSearchQuery.length < 2 && popularStocks && (
-                      <CommandGroup heading="Popular Stocks">
-                        {popularStocks.map((stock) => (
-                          <CommandItem
-                            key={stock.symbol}
-                            value={stock.symbol}
-                            onSelect={handleStockSelect}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                formData.symbol === stock.symbol ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            <span className="font-medium">{stock.symbol}</span>
-                            <span className="ml-2 text-gray-500 text-xs">{stock.name}</span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    )}
-                    
-                    {stockSearchResults && stockSearchResults.length > 0 && (
-                      <CommandGroup heading="Search Results">
-                        {stockSearchResults.map((stock) => (
-                          <CommandItem
-                            key={stock.symbol}
-                            value={stock.symbol}
-                            onSelect={handleStockSelect}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                formData.symbol === stock.symbol ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            <span className="font-medium">{stock.symbol}</span>
-                            <span className="ml-2 text-gray-500 text-xs">{stock.name}</span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    )}
+                    <CommandList>
+                      <CommandEmpty>
+                        {isSearching ? "Searching..." : "No stocks found."}
+                      </CommandEmpty>
+                      
+                      {stockSearchQuery.length < 2 && popularStocks && (
+                        <CommandGroup heading="Popular Stocks">
+                          {popularStocks.map((stock) => (
+                            <CommandItem
+                              key={stock.symbol}
+                              value={stock.symbol}
+                              onSelect={handleStockSelect}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.symbol === stock.symbol ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <span className="font-medium">{stock.symbol}</span>
+                              <span className="ml-2 text-gray-500 text-xs">{stock.name}</span>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      )}
+                      
+                      {stockSearchResults && stockSearchResults.length > 0 && (
+                        <CommandGroup heading="Search Results">
+                          {stockSearchResults.map((stock) => (
+                            <CommandItem
+                              key={stock.symbol}
+                              value={stock.symbol}
+                              onSelect={handleStockSelect}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.symbol === stock.symbol ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <span className="font-medium">{stock.symbol}</span>
+                              <span className="ml-2 text-gray-500 text-xs">{stock.name}</span>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      )}
+                    </CommandList>
                   </Command>
                 </PopoverContent>
               </Popover>
