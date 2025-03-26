@@ -6,7 +6,7 @@ import PortfolioChart from "@/components/PortfolioChart";
 import InvestmentTable from "@/components/InvestmentTable";
 import PerformanceMetrics from "@/components/PerformanceMetrics";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, RefreshCw, LightbulbIcon, TrendingUp, Coins, AreaChart, Calendar } from "lucide-react";
+import { ArrowLeft, RefreshCw, LightbulbIcon, TrendingUp, Coins, AreaChart, Calendar, Award } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -174,6 +174,27 @@ const Results = () => {
   
   const dcaInsight = dcaEffectiveness();
 
+  // Calculate time in market in years and months
+  const calculateTimeInMarket = () => {
+    if (schedule.length < 2) return { investmentDates: 0, months: 0, years: 0 };
+    
+    const firstDate = new Date(schedule[0].date);
+    const lastDate = new Date(schedule[schedule.length - 1].date);
+    
+    // Calculate total days
+    const totalDays = (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24);
+    const years = totalDays / 365;
+    const months = totalDays / 30.44; // average days in a month
+    
+    return {
+      investmentDates: schedule.length,
+      months: months,
+      years: years,
+    };
+  };
+  
+  const timeInMarket = calculateTimeInMarket();
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
@@ -219,31 +240,31 @@ const Results = () => {
           </div>
           
           <div className="h-fit mb-8">
-            <BlurBackground className="p-6 h-[468px] overflow-auto">
+            <BlurBackground className="p-4 md:p-6 h-[468px] overflow-auto shadow-lg rounded-lg">
               <div className="flex items-center gap-2 mb-4">
                 <LightbulbIcon className="h-6 w-6 text-amber-500" />
                 <h2 className="text-xl md:text-2xl font-medium text-gray-800">Investment Insights</h2>
               </div>
               
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className={`p-3 rounded-lg shadow-sm ${getInfoCardColor('insight')}`}>
-                  <div className="flex items-start gap-2">
-                    <Calendar className="h-4 w-4 text-violet-600 mt-0.5" />
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2.5 rounded-lg shadow-sm bg-white border border-gray-100">
+                  <div className="flex items-start gap-1.5">
+                    <Calendar className="h-3.5 w-3.5 text-violet-600 mt-0.5" />
                     <div>
-                      <h3 className="font-medium text-sm text-gray-800">Time in Market</h3>
-                      <p className="text-xs text-gray-600">
-                        {schedule.length} investment dates over {(schedule.length / 21).toFixed(1)} months
+                      <h3 className="font-medium text-xs text-gray-800">Time in Market</h3>
+                      <p className="text-[10px] text-gray-600">
+                        {timeInMarket.investmentDates} investment dates over {timeInMarket.years.toFixed(1)} years
                       </p>
                     </div>
                   </div>
                 </div>
                 
-                <div className={`p-3 rounded-lg shadow-sm ${getInfoCardColor(performance?.totalReturn >= 0 ? 'positive' : 'negative')}`}>
-                  <div className="flex items-start gap-2">
-                    <TrendingUp className="h-4 w-4 text-gray-700 mt-0.5" />
+                <div className="p-2.5 rounded-lg shadow-sm bg-white border border-gray-100">
+                  <div className="flex items-start gap-1.5">
+                    <TrendingUp className="h-3.5 w-3.5 text-gray-700 mt-0.5" />
                     <div>
-                      <h3 className="font-medium text-sm text-gray-800">Performance</h3>
-                      <p className="text-xs text-gray-600">
+                      <h3 className="font-medium text-xs text-gray-800">Performance</h3>
+                      <p className="text-[10px] text-gray-600">
                         {formatPercentage(performance?.percentageReturn || 0)} return on {formData?.symbol}
                       </p>
                     </div>
@@ -252,39 +273,39 @@ const Results = () => {
               </div>
               
               {dcaInsight && (
-                <div className={`p-3 rounded-lg shadow-sm ${getInfoCardColor('neutral')} mb-4`}>
-                  <div className="flex items-start gap-2">
-                    <AreaChart className="h-4 w-4 text-sky-600 mt-0.5" />
+                <div className="p-2.5 rounded-lg shadow-sm bg-white border border-gray-100 my-2">
+                  <div className="flex items-start gap-1.5">
+                    <AreaChart className="h-3.5 w-3.5 text-sky-600 mt-0.5" />
                     <div>
-                      <h3 className="font-medium text-sm text-gray-800">Dollar-Cost Averaging: {dcaInsight.effectiveness}</h3>
-                      <p className="text-xs text-gray-600">{dcaInsight.description}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Price volatility: {(dcaInsight.volatility * 100).toFixed(1)}%</p>
+                      <h3 className="font-medium text-xs text-gray-800">Dollar-Cost Averaging: {dcaInsight.effectiveness}</h3>
+                      <p className="text-[10px] text-gray-600">{dcaInsight.description}</p>
+                      <p className="text-[10px] text-gray-500 mt-0.5">Price volatility: {(dcaInsight.volatility * 100).toFixed(1)}%</p>
                     </div>
                   </div>
                 </div>
               )}
               
               {projections && (
-                <div className="mb-4">
-                  <h3 className="text-sm font-medium mb-2 text-gray-800">Future Projections</h3>
-                  <div className="space-y-3">
+                <div className="mt-3">
+                  <h3 className="text-sm font-medium mb-2 text-gray-800 flex items-center gap-1.5">
+                    <Award className="h-4 w-4 text-emerald-600" />
+                    Future Projections
+                  </h3>
+                  <div className="grid grid-cols-3 gap-2">
                     {projections.map((projection, index) => (
-                      <div key={index} className={`p-3 rounded-lg shadow-sm ${getInfoCardColor('positive')}`}>
-                        <div className="flex items-start gap-2">
-                          <Coins className="h-4 w-4 text-emerald-600 mt-0.5" />
-                          <div>
-                            <h4 className="font-medium text-sm text-gray-800">{projection.period}</h4>
-                            <div className="flex flex-col text-xs">
-                              <span className="text-gray-600">
-                                With {formatPercentage(performance?.annualizedReturn || 0)} return:
-                              </span>
-                              <span className="font-semibold text-emerald-700">
-                                {formatCurrency(projection.projected)}
-                              </span>
-                              <span className="text-gray-500 text-xs mt-0.5">
-                                Total invested: {formatCurrency(projection.value)}
-                              </span>
-                            </div>
+                      <div key={index} className="p-2.5 rounded-lg shadow-sm bg-white border border-gray-100">
+                        <div>
+                          <h4 className="font-medium text-xs text-gray-800">{projection.period}</h4>
+                          <div className="flex flex-col text-[10px]">
+                            <span className="font-semibold text-emerald-700">
+                              {formatCurrency(projection.projected)}
+                            </span>
+                            <span className="text-gray-500 text-[9px] mt-0.5">
+                              Invested: {formatCurrency(projection.value)}
+                            </span>
+                            <span className="text-[9px] text-emerald-600">
+                              {formatPercentage((projection.projected/projection.value - 1) * 100)} growth
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -294,20 +315,27 @@ const Results = () => {
               )}
                             
               <div className="pt-3 mt-3 border-t border-gray-100">
-                <h3 className="text-sm font-medium mb-2">Basic Information</h3>
-                <div className="space-y-1 text-xs">
-                  <p className="text-gray-600">
-                    <span className="font-medium">Stock:</span> {formData?.symbol}
-                  </p>
-                  <p className="text-gray-600">
-                    <span className="font-medium">Investment Period:</span> {formData ? new Date(formData.startDate).toLocaleDateString() : ''} to {formData ? new Date(formData.endDate).toLocaleDateString() : ''}
-                  </p>
-                  <p className="text-gray-600">
-                    <span className="font-medium">Frequency:</span> {formData?.frequency}
-                  </p>
-                  <p className="text-gray-600">
-                    <span className="font-medium">Amount per Investment:</span> ${formData?.amount.toLocaleString()}
-                  </p>
+                <h3 className="text-sm font-medium mb-2 flex items-center">
+                  <Coins className="h-4 w-4 text-gray-600 mr-1.5" />
+                  Investment Details
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2.5 rounded-lg shadow-sm bg-white border border-gray-100">
+                    <p className="text-xs text-gray-800">
+                      <span className="font-medium">Stock:</span> {formData?.symbol}
+                    </p>
+                    <p className="text-[10px] text-gray-600 mt-1">
+                      <span className="font-medium">Frequency:</span> {formData?.frequency}
+                    </p>
+                  </div>
+                  <div className="p-2.5 rounded-lg shadow-sm bg-white border border-gray-100">
+                    <p className="text-xs text-gray-800">
+                      <span className="font-medium">Amount:</span> ${formData?.amount.toLocaleString()}
+                    </p>
+                    <p className="text-[10px] text-gray-600 mt-1">
+                      <span className="font-medium">Period:</span> {formData ? new Date(formData.startDate).toLocaleDateString('en-US', {year: '2-digit', month: '2-digit', day: '2-digit'}) : ''} to {formData ? new Date(formData.endDate).toLocaleDateString('en-US', {year: '2-digit', month: '2-digit', day: '2-digit'}) : ''}
+                    </p>
+                  </div>
                 </div>
               </div>
             </BlurBackground>

@@ -4,6 +4,8 @@ import {
   Area, 
   AreaChart, 
   CartesianGrid, 
+  Line,
+  ComposedChart,
   ResponsiveContainer, 
   Tooltip, 
   TooltipProps, 
@@ -88,12 +90,15 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
 
   const tickInterval = calculateTickInterval(chartData);
 
+  // Function to determine if a specific point is profitable or not
+  const getLineColor = (entry: any) => entry.isProfit ? "#10b981" : "#ef4444";
+
   return (
     <BlurBackground className="p-4 md:p-6 animate-fade-in">
       <h2 className="text-xl md:text-2xl font-medium text-gray-800 mb-4">Portfolio Growth</h2>
       <div className="h-[400px]">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
+          <ComposedChart
             data={chartData}
             margin={{ 
               top: 10, 
@@ -124,17 +129,16 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
               animationDuration={1500}
               isAnimationActive={true}
             />
-            <Area
+            <Line
               type="monotone"
               dataKey="value"
-              stackId="2"
-              stroke={isOverallProfit ? "#10b981" : "#ef4444"} 
-              fill={isOverallProfit ? "#10b98180" : "#ef444480"}
-              fillOpacity={0.5}
+              stroke={isOverallProfit ? "#10b981" : "#ef4444"}
+              strokeWidth={2}
+              dot={{ fill: getLineColor, r: 3 }}
               animationDuration={1500}
               isAnimationActive={true}
             />
-          </AreaChart>
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </BlurBackground>
