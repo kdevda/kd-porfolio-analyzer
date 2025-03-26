@@ -139,11 +139,13 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
               fill="none"
               dot={{ 
                 r: 3,
-                fill: (props: any) => {
-                  // Type-safe way to set the dot color based on profit status
-                  const entry = props.payload;
-                  return entry.isProfit ? "#10b981" : "#ef4444";
-                }
+                fill: "#FFFFFF", // Set a default fill color
+                stroke: isOverallProfit ? "#10b981" : "#ef4444", // Use stroke instead
+                strokeWidth: 2
+              }}
+              activeDot={{
+                r: 5,
+                fill: (entry: any) => entry.isProfit ? "#10b981" : "#ef4444"
               }}
               animationDuration={1500}
               isAnimationActive={true}
