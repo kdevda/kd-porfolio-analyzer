@@ -5,37 +5,14 @@ import { cn } from "@/lib/utils";
 interface BlurBackgroundProps {
   children: React.ReactNode;
   className?: string;
-  strength?: "sm" | "md" | "lg" | "xl";
-  color?: "light" | "dark";
 }
 
-const BlurBackground = ({
-  children,
-  className,
-  strength = "md",
-  color = "light",
-}: BlurBackgroundProps) => {
-  const strengthMap = {
-    sm: "backdrop-blur-sm",
-    md: "backdrop-blur-md",
-    lg: "backdrop-blur-lg",
-    xl: "backdrop-blur-xl",
-  };
-  
-  const colorMap = {
-    light: "bg-white/40 border border-white/20",
-    dark: "bg-black/40 border border-white/10",
-  };
-  
+const BlurBackground = ({ children, className }: BlurBackgroundProps) => {
   return (
-    <div
-      className={cn(
-        strengthMap[strength],
-        colorMap[color],
-        "shadow-soft rounded-lg",
-        className
-      )}
-    >
+    <div className={cn(
+      "relative bg-white bg-opacity-70 backdrop-blur-lg rounded-xl shadow-md border border-gray-200",
+      className
+    )}>
       {children}
     </div>
   );

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +30,6 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
   const [stockSearchResults, setStockSearchResults] = useState<StockInfo[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  // Initialize form with initialData if provided
   useEffect(() => {
     if (initialData) {
       setFormData(initialData);
@@ -78,17 +76,14 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
     onSubmit(formData);
   };
 
-  // Generate today's date for max value in date inputs
   const today = new Date().toISOString().split("T")[0];
 
-  // Set default dates if not provided
   useEffect(() => {
     if (!formData.endDate) {
       setFormData((prev) => ({ ...prev, endDate: today }));
     }
     
     if (!formData.startDate) {
-      // Default to 1 year ago
       const oneYearAgo = new Date();
       oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
       setFormData((prev) => ({ 
@@ -98,7 +93,6 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
     }
   }, []);
 
-  // Popular stocks and indices for quick selection
   const popularStocks = [
     { symbol: "AAPL", name: "Apple Inc." },
     { symbol: "MSFT", name: "Microsoft Corporation" },
@@ -109,7 +103,6 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
     { symbol: "NVDA", name: "NVIDIA Corporation" },
     { symbol: "JPM", name: "JPMorgan Chase & Co." },
     { symbol: "V", name: "Visa Inc." },
-    // ETFs and Indices
     { symbol: "SPY", name: "SPDR S&P 500 ETF Trust" },
     { symbol: "QQQ", name: "Invesco QQQ Trust" },
     { symbol: "VOO", name: "Vanguard S&P 500 ETF" },
@@ -119,7 +112,6 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
     { symbol: "XLF", name: "Financial Select Sector SPDR Fund" },
     { symbol: "XLE", name: "Energy Select Sector SPDR Fund" },
     { symbol: "XLK", name: "Technology Select Sector SPDR Fund" },
-    // Additional popular stocks
     { symbol: "BRK.B", name: "Berkshire Hathaway Inc." },
     { symbol: "JNJ", name: "Johnson & Johnson" },
     { symbol: "PG", name: "Procter & Gamble Co." },
@@ -132,7 +124,6 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
     { symbol: "VZ", name: "Verizon Communications Inc." },
     { symbol: "KO", name: "Coca-Cola Co." },
     { symbol: "PFE", name: "Pfizer Inc." },
-    // International indices
     { symbol: "EFA", name: "iShares MSCI EAFE ETF" },
     { symbol: "EEM", name: "iShares MSCI Emerging Markets ETF" },
     { symbol: "FXI", name: "iShares China Large-Cap ETF" },

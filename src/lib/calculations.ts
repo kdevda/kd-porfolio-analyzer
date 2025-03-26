@@ -1,3 +1,4 @@
+
 import { InvestmentFormData, InvestmentSchedule, PortfolioPerformance, StockData } from "@/types";
 
 // Generate investment schedule based on form data and stock data
@@ -104,6 +105,7 @@ export const generateInvestmentSchedule = (
       
       if (dividendAmount <= 0) continue;
       
+      // Always track cumulative dividends whether they are reinvested or not
       cumulativeDividends += dividendAmount;
       
       // If we already have an entry for this date, update it instead of creating a new one
@@ -125,15 +127,16 @@ export const generateInvestmentSchedule = (
         }
       }
       
-      // Only create dividend entries if reinvestDividends is enabled
+      // Only create separate dividend entries if reinvestDividends is enabled
       if (reinvestDividends) {
-        // Create a new dividend entry
+        // Create a new dividend entry with correct totalInvested calculation
         const sharesPurchased = parseFloat((dividendAmount / price).toFixed(6));
         totalShares += sharesPurchased;
         
         const currentValue = parseFloat((totalShares * price).toFixed(2));
         
-        // IMPORTANT FIX: Use the previous totalInvested value and only add dividend amount if reinvesting
+        // FIXED: Use previous totalInvested + dividendAmount for the entry
+        // This ensures we're not adding the full investment amount again
         const entryTotalInvested = totalInvested + dividendAmount;
         totalInvested = entryTotalInvested; // Update the running total
         
@@ -156,6 +159,16 @@ export const generateInvestmentSchedule = (
   
   // Sort the schedule by date
   schedule.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  
+  // Make sure all entries have the correct cumulativeDividends value
+  let lastCumulativeDividends = 0;
+  for (const entry of schedule) {
+    if (entry.dividend && entry.dividend > 0) {
+      lastCumulativeDividends = entry.cumulativeDividends || lastCumulativeDividends;
+    } else {
+      entry.cumulativeDividends = lastCumulativeDividends;
+    }
+  }
   
   return schedule;
 };

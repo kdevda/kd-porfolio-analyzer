@@ -91,7 +91,9 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
   const tickInterval = calculateTickInterval(chartData);
 
   // Function to determine if a specific dot is profitable
-  const getDotFill = (entry: any) => entry.isProfit ? "#10b981" : "#ef4444";
+  const getDotFill = (entry: any) => {
+    return entry.isProfit ? "#10b981" : "#ef4444";
+  };
 
   return (
     <BlurBackground className="p-4 md:p-6 animate-fade-in">
@@ -136,8 +138,12 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
               strokeWidth={2}
               fill="none"
               dot={{ 
-                fill: getDotFill,
-                r: 3 
+                r: 3,
+                fill: (props: any) => {
+                  // Type-safe way to set the dot color based on profit status
+                  const entry = props.payload;
+                  return entry.isProfit ? "#10b981" : "#ef4444";
+                }
               }}
               animationDuration={1500}
               isAnimationActive={true}
