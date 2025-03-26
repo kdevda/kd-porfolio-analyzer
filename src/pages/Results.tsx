@@ -85,12 +85,12 @@ const Results = () => {
   }
   
   const getInfoCardColor = (type: string) => {
-    if (type === 'positive') return 'bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200';
-    if (type === 'negative') return 'bg-gradient-to-br from-rose-50 to-rose-100 border-rose-200';
-    if (type === 'neutral') return 'bg-gradient-to-br from-sky-50 to-sky-100 border-sky-200';
-    if (type === 'insight') return 'bg-gradient-to-br from-violet-50 to-violet-100 border-violet-200';
-    if (type === 'warning') return 'bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200';
-    return 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200';
+    if (type === 'positive') return 'bg-gradient-to-br from-emerald-50 to-emerald-100';
+    if (type === 'negative') return 'bg-gradient-to-br from-rose-50 to-rose-100';
+    if (type === 'neutral') return 'bg-gradient-to-br from-sky-50 to-sky-100';
+    if (type === 'insight') return 'bg-gradient-to-br from-violet-50 to-violet-100';
+    if (type === 'warning') return 'bg-gradient-to-br from-amber-50 to-amber-100';
+    return 'bg-gradient-to-br from-gray-50 to-gray-100';
   };
 
   // Calculate annualized return for specific time periods
@@ -219,32 +219,32 @@ const Results = () => {
           </div>
           
           <div className="h-fit mb-8">
-            <BlurBackground className="p-6 border-l-4 border-l-gray-800">
+            <BlurBackground className="p-6 h-[468px] overflow-auto">
               <div className="flex items-center gap-2 mb-4">
                 <LightbulbIcon className="h-6 w-6 text-amber-500" />
                 <h2 className="text-xl md:text-2xl font-medium text-gray-800">Investment Insights</h2>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                <div className={`p-4 rounded-lg border ${getInfoCardColor('insight')}`}>
-                  <div className="flex items-start gap-3">
-                    <Calendar className="h-5 w-5 text-violet-600 mt-1" />
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className={`p-3 rounded-lg shadow-sm ${getInfoCardColor('insight')}`}>
+                  <div className="flex items-start gap-2">
+                    <Calendar className="h-4 w-4 text-violet-600 mt-0.5" />
                     <div>
-                      <h3 className="font-medium text-gray-800 mb-1">Time in Market</h3>
-                      <p className="text-sm text-gray-600">
+                      <h3 className="font-medium text-sm text-gray-800">Time in Market</h3>
+                      <p className="text-xs text-gray-600">
                         {schedule.length} investment dates over {(schedule.length / 21).toFixed(1)} months
                       </p>
                     </div>
                   </div>
                 </div>
                 
-                <div className={`p-4 rounded-lg border ${getInfoCardColor(performance.totalReturn >= 0 ? 'positive' : 'negative')}`}>
-                  <div className="flex items-start gap-3">
-                    <TrendingUp className="h-5 w-5 text-gray-700 mt-1" />
+                <div className={`p-3 rounded-lg shadow-sm ${getInfoCardColor(performance?.totalReturn >= 0 ? 'positive' : 'negative')}`}>
+                  <div className="flex items-start gap-2">
+                    <TrendingUp className="h-4 w-4 text-gray-700 mt-0.5" />
                     <div>
-                      <h3 className="font-medium text-gray-800 mb-1">Performance</h3>
-                      <p className="text-sm text-gray-600">
-                        {formatPercentage(performance.percentageReturn)} return on {formData.symbol}
+                      <h3 className="font-medium text-sm text-gray-800">Performance</h3>
+                      <p className="text-xs text-gray-600">
+                        {formatPercentage(performance?.percentageReturn || 0)} return on {formData?.symbol}
                       </p>
                     </div>
                   </div>
@@ -252,37 +252,39 @@ const Results = () => {
               </div>
               
               {dcaInsight && (
-                <div className={`p-4 rounded-lg border ${getInfoCardColor('neutral')} mb-6`}>
-                  <div className="flex items-start gap-3">
-                    <AreaChart className="h-5 w-5 text-sky-600 mt-1" />
+                <div className={`p-3 rounded-lg shadow-sm ${getInfoCardColor('neutral')} mb-4`}>
+                  <div className="flex items-start gap-2">
+                    <AreaChart className="h-4 w-4 text-sky-600 mt-0.5" />
                     <div>
-                      <h3 className="font-medium text-gray-800 mb-1">Dollar-Cost Averaging Effectiveness: {dcaInsight.effectiveness}</h3>
-                      <p className="text-sm text-gray-600">{dcaInsight.description}</p>
-                      <p className="text-xs text-gray-500 mt-1">Price volatility: {(dcaInsight.volatility * 100).toFixed(1)}%</p>
+                      <h3 className="font-medium text-sm text-gray-800">Dollar-Cost Averaging: {dcaInsight.effectiveness}</h3>
+                      <p className="text-xs text-gray-600">{dcaInsight.description}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Price volatility: {(dcaInsight.volatility * 100).toFixed(1)}%</p>
                     </div>
                   </div>
                 </div>
               )}
               
               {projections && (
-                <div>
-                  <h3 className="text-lg font-medium mb-3 text-gray-800">Future Projections</h3>
+                <div className="mb-4">
+                  <h3 className="text-sm font-medium mb-2 text-gray-800">Future Projections</h3>
                   <div className="space-y-3">
                     {projections.map((projection, index) => (
-                      <div key={index} className={`p-4 rounded-lg border ${getInfoCardColor('positive')}`}>
-                        <div className="flex items-start gap-3">
-                          <Coins className="h-5 w-5 text-emerald-600 mt-1" />
+                      <div key={index} className={`p-3 rounded-lg shadow-sm ${getInfoCardColor('positive')}`}>
+                        <div className="flex items-start gap-2">
+                          <Coins className="h-4 w-4 text-emerald-600 mt-0.5" />
                           <div>
-                            <h4 className="font-medium text-gray-800">{projection.period}</h4>
-                            <p className="text-sm text-gray-600 mt-1">
-                              If continued at {formatPercentage(performance.annualizedReturn)} return:
-                              <span className="font-semibold block text-emerald-700 mt-1">
+                            <h4 className="font-medium text-sm text-gray-800">{projection.period}</h4>
+                            <div className="flex flex-col text-xs">
+                              <span className="text-gray-600">
+                                With {formatPercentage(performance?.annualizedReturn || 0)} return:
+                              </span>
+                              <span className="font-semibold text-emerald-700">
                                 {formatCurrency(projection.projected)}
                               </span>
-                            </p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              Total invested: {formatCurrency(projection.value)}
-                            </p>
+                              <span className="text-gray-500 text-xs mt-0.5">
+                                Total invested: {formatCurrency(projection.value)}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -291,20 +293,20 @@ const Results = () => {
                 </div>
               )}
                             
-              <div className="pt-4 mt-4 border-t border-gray-200">
-                <h3 className="text-lg font-medium mb-3">Basic Information</h3>
-                <div className="space-y-2 text-sm">
+              <div className="pt-3 mt-3 border-t border-gray-100">
+                <h3 className="text-sm font-medium mb-2">Basic Information</h3>
+                <div className="space-y-1 text-xs">
                   <p className="text-gray-600">
-                    <span className="font-medium">Stock:</span> {formData.symbol}
+                    <span className="font-medium">Stock:</span> {formData?.symbol}
                   </p>
                   <p className="text-gray-600">
-                    <span className="font-medium">Investment Period:</span> {new Date(formData.startDate).toLocaleDateString()} to {new Date(formData.endDate).toLocaleDateString()}
+                    <span className="font-medium">Investment Period:</span> {formData ? new Date(formData.startDate).toLocaleDateString() : ''} to {formData ? new Date(formData.endDate).toLocaleDateString() : ''}
                   </p>
                   <p className="text-gray-600">
-                    <span className="font-medium">Frequency:</span> {formData.frequency}
+                    <span className="font-medium">Frequency:</span> {formData?.frequency}
                   </p>
                   <p className="text-gray-600">
-                    <span className="font-medium">Amount per Investment:</span> ${formData.amount.toLocaleString()}
+                    <span className="font-medium">Amount per Investment:</span> ${formData?.amount.toLocaleString()}
                   </p>
                 </div>
               </div>

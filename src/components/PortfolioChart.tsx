@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import { 
   Area, 
   AreaChart, 
@@ -29,14 +29,21 @@ const CustomTooltip = ({
   label,
 }: TooltipProps<ValueType, NameType>) => {
   if (active && payload && payload.length) {
+    const portfolioValue = Number(payload[1].value);
+    const invested = Number(payload[0].value);
+    const isProfit = portfolioValue > invested;
+    
     return (
       <BlurBackground className="p-3 text-xs">
         <p className="font-medium">{label}</p>
-        <p className="text-gray-800">
-          Portfolio Value: {formatCurrency(Number(payload[1].value))}
+        <p className={`font-medium ${isProfit ? "text-emerald-700" : "text-rose-700"}`}>
+          Portfolio Value: {formatCurrency(portfolioValue)}
         </p>
         <p className="text-gray-600">
-          Amount Invested: {formatCurrency(Number(payload[0].value))}
+          Amount Invested: {formatCurrency(invested)}
+        </p>
+        <p className={`text-xs ${isProfit ? "text-emerald-600" : "text-rose-600"}`}>
+          {isProfit ? "Profit:" : "Loss:"} {formatCurrency(portfolioValue - invested)}
         </p>
       </BlurBackground>
     );
@@ -48,12 +55,21 @@ const CustomTooltip = ({
 const PortfolioChart = ({ data }: PortfolioChartProps) => {
   const isMobile = useIsMobile();
   
-  // Transform data for the chart
-  const chartData = data.map((item) => ({
-    date: item.date,
-    value: item.currentValue,
-    invested: item.totalInvested,
-  }));
+  // Transform data for the chart and determine profit/loss status
+  const chartData = useMemo(() => {
+    return data.map((item) => ({
+      date: item.date,
+      value: item.currentValue,
+      invested: item.totalInvested,
+      isProfit: item.currentValue > item.totalInvested
+    }));
+  }, [data]);
+
+  // Determine if the overall result is a profit or loss
+  const isOverallProfit = useMemo(() => {
+    if (chartData.length === 0) return true;
+    return chartData[chartData.length - 1].isProfit;
+  }, [chartData]);
 
   // Function to format dates on the X axis
   const formatXAxis = (dateStr: string) => {
@@ -73,7 +89,7 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
   const tickInterval = calculateTickInterval(chartData);
 
   return (
-    <BlurBackground className="p-4 md:p-6 animate-fade-in h-full">
+    <BlurBackground className="p-4 md:p-6 animate-fade-in">
       <h2 className="text-xl md:text-2xl font-medium text-gray-800 mb-4">Portfolio Growth</h2>
       <div className="h-[400px]">
         <ResponsiveContainer width="100%" height="100%">
@@ -112,8 +128,8 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
               type="monotone"
               dataKey="value"
               stackId="2"
-              stroke="#333333"
-              fill="#888888"
+              stroke={isOverallProfit ? "#10b981" : "#ef4444"} 
+              fill={isOverallProfit ? "#10b98180" : "#ef444480"}
               fillOpacity={0.5}
               animationDuration={1500}
               isAnimationActive={true}

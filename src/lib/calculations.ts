@@ -139,14 +139,21 @@ export const generateInvestmentSchedule = (
       
       const currentValue = parseFloat((totalShares * price).toFixed(2));
       
-      // Add the dividend entry to the schedule
+      // Add the dividend entry to the schedule - THE BUG FIX: Do not update totalInvested for dividend entries
+      // unless reinvesting
+      let entryTotalInvested = totalInvested;
+      if (reinvestDividends) {
+        entryTotalInvested += dividendAmount;
+        totalInvested = entryTotalInvested; // Update the running total only if reinvesting
+      }
+      
       schedule.push({
         date,
         amount: investmentAmount,
         sharesPurchased,
         price,
         totalShares,
-        totalInvested, // Total invested remains the same for dividend entries (not counting reinvestment)
+        totalInvested: entryTotalInvested,
         currentValue,
         dividend,
         cumulativeDividends
