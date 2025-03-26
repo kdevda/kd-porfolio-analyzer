@@ -10,9 +10,10 @@ import BlurBackground from "./ui/BlurBackground";
 interface InvestmentFormProps {
   onSubmit: (data: InvestmentFormData) => void;
   isLoading: boolean;
+  initialData?: InvestmentFormData | null;
 }
 
-const InvestmentForm = ({ onSubmit, isLoading }: InvestmentFormProps) => {
+const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProps) => {
   const [formData, setFormData] = React.useState<InvestmentFormData>({
     symbol: "",
     startDate: "",
@@ -20,6 +21,13 @@ const InvestmentForm = ({ onSubmit, isLoading }: InvestmentFormProps) => {
     frequency: "monthly",
     amount: 0,
   });
+
+  // Initialize form with initialData if provided
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement> | { name: string; value: string | number }
