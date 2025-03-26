@@ -10,7 +10,7 @@ import { ArrowLeft, RefreshCw } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { calculatePerformance, generateInvestmentSchedule } from "@/lib/calculations";
+import { calculatePerformance, generateInvestmentSchedule, formatCurrency, formatPercentage } from "@/lib/calculations";
 import BlurBackground from "@/components/ui/BlurBackground";
 import { toast } from "@/hooks/use-toast";
 
