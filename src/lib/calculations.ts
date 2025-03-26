@@ -127,27 +127,28 @@ export const generateInvestmentSchedule = (
       
       // Only create dividend entries if reinvestDividends is enabled
       if (reinvestDividends) {
-        // Create a new dividend entry
-        const sharesPurchased = parseFloat((dividendAmount / price).toFixed(6));
-        totalShares += sharesPurchased;
-        
-        const currentValue = parseFloat((totalShares * price).toFixed(2));
-        
-        // IMPORTANT FIX: Use the previous totalInvested value and only add dividend amount if reinvesting
-        const previousTotalInvested = latestEntryBeforeDividend.totalInvested; // Use the last recorded investment total
-        const entryTotalInvested = reinvestDividends ? previousTotalInvested + dividendAmount : previousTotalInvested;
-        
-        schedule.push({
-          date,
-          amount: dividendAmount,
-          sharesPurchased,
-          price,
-          totalShares,
-          totalInvested: entryTotalInvested,
-          currentValue,
-          dividend,
-          cumulativeDividends
-        });
+          const additionalShares = parseFloat((dividendAmount / price).toFixed(6));
+          totalShares += additionalShares;
+      
+          // Fix Total Invested Calculation
+          const previousTotalInvested = latestEntryBeforeDividend.totalInvested;
+          const entryTotalInvested = previousTotalInvested + dividendAmount;
+      
+          // Fix Value Calculation
+          const correctValue = parseFloat((totalShares * price).toFixed(2));
+      
+          schedule.push({
+              date,
+              amount: dividendAmount,
+              sharesPurchased: additionalShares,
+              price,
+              totalShares,
+              totalInvested: entryTotalInvested,
+              currentValue: correctValue, // Corrected Value Column
+              dividend,
+              cumulativeDividends
+          });
+      }
         
         processedDates.add(date);
       }
