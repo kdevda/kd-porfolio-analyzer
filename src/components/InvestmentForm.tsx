@@ -100,26 +100,22 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
 
   // Popular stocks and indices for quick selection
   const popularStocks = [
-    // Major US Indices
-    { symbol: "SPY", name: "SPDR S&P 500 ETF Trust" },
-    { symbol: "QQQ", name: "Invesco QQQ Trust (NASDAQ)" },
-    { symbol: "DIA", name: "SPDR Dow Jones Industrial Average ETF" },
-    { symbol: "IWM", name: "iShares Russell 2000 ETF" },
-    // Major US Stocks
-    { symbol: "AAPL", name: "Apple Inc. (NASDAQ)" },
-    { symbol: "MSFT", name: "Microsoft Corporation (NASDAQ)" },
-    { symbol: "GOOGL", name: "Alphabet Inc. (NASDAQ)" },
-    { symbol: "AMZN", name: "Amazon.com Inc. (NASDAQ)" },
-    { symbol: "META", name: "Meta Platforms, Inc. (NASDAQ)" },
-    { symbol: "TSLA", name: "Tesla, Inc. (NASDAQ)" },
-    { symbol: "NVDA", name: "NVIDIA Corporation (NASDAQ)" },
-    { symbol: "MSTR", name: "MicroStrategy Incorporated (NASDAQ)" },
+    { symbol: "AAPL", name: "Apple Inc." },
+    { symbol: "MSFT", name: "Microsoft Corporation" },
+    { symbol: "GOOGL", name: "Alphabet Inc." },
+    { symbol: "AMZN", name: "Amazon.com Inc." },
+    { symbol: "TSLA", name: "Tesla, Inc." },
+    { symbol: "META", name: "Meta Platforms, Inc." },
+    { symbol: "NVDA", name: "NVIDIA Corporation" },
     { symbol: "JPM", name: "JPMorgan Chase & Co." },
     { symbol: "V", name: "Visa Inc." },
-    { symbol: "SBUX", name: "Starbucks Corporation (NASDAQ)" },
-    // ETFs
+    // ETFs and Indices
+    { symbol: "SPY", name: "SPDR S&P 500 ETF Trust" },
+    { symbol: "QQQ", name: "Invesco QQQ Trust" },
     { symbol: "VOO", name: "Vanguard S&P 500 ETF" },
     { symbol: "VTI", name: "Vanguard Total Stock Market ETF" },
+    { symbol: "IWM", name: "iShares Russell 2000 ETF" },
+    { symbol: "DIA", name: "SPDR Dow Jones Industrial Average ETF" },
     { symbol: "XLF", name: "Financial Select Sector SPDR Fund" },
     { symbol: "XLE", name: "Energy Select Sector SPDR Fund" },
     { symbol: "XLK", name: "Technology Select Sector SPDR Fund" },
@@ -132,7 +128,7 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
     { symbol: "BAC", name: "Bank of America Corp." },
     { symbol: "MA", name: "Mastercard Inc." },
     { symbol: "DIS", name: "Walt Disney Co." },
-    { symbol: "INTC", name: "Intel Corporation (NASDAQ)" },
+    { symbol: "INTC", name: "Intel Corporation" },
     { symbol: "VZ", name: "Verizon Communications Inc." },
     { symbol: "KO", name: "Coca-Cola Co." },
     { symbol: "PFE", name: "Pfizer Inc." },
@@ -142,17 +138,7 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
     { symbol: "FXI", name: "iShares China Large-Cap ETF" },
     { symbol: "EWJ", name: "iShares MSCI Japan ETF" },
     { symbol: "EWG", name: "iShares MSCI Germany ETF" },
-    { symbol: "EWU", name: "iShares MSCI United Kingdom ETF" },
-    // Toronto Stock Exchange (TSE)
-    { symbol: "GSY.TO", name: "Invesco Ultra Short Term Bond ETF (TSE)" },
-    { symbol: "XIU.TO", name: "iShares S&P/TSX 60 Index ETF (TSE)" },
-    { symbol: "XIC.TO", name: "iShares Core S&P/TSX Capped Composite Index ETF (TSE)" },
-    { symbol: "ZSP.TO", name: "BMO S&P 500 Index ETF (TSE)" },
-    { symbol: "TD.TO", name: "Toronto-Dominion Bank (TSE)" },
-    { symbol: "RY.TO", name: "Royal Bank of Canada (TSE)" },
-    { symbol: "ENB.TO", name: "Enbridge Inc. (TSE)" },
-    { symbol: "SU.TO", name: "Suncor Energy Inc. (TSE)" },
-    { symbol: "CNR.TO", name: "Canadian National Railway Company (TSE)" },
+    { symbol: "EWU", name: "iShares MSCI United Kingdom ETF" }
   ];
 
   return (
@@ -161,88 +147,86 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
         <div className="space-y-6">
           <h2 className="text-2xl font-medium text-gray-800">Investment Parameters</h2>
           
-          {/* Stock Symbol - Full Width */}
-          <div className="space-y-2">
-            <Label htmlFor="symbol">Stock Symbol</Label>
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={open}
-                  className="w-full justify-between text-left font-normal bg-white hover:bg-gray-100 text-gray-800 border-gray-300"
-                >
-                  {formData.symbol
-                    ? stockSearchResults.find((stock) => stock.symbol === formData.symbol)?.symbol || formData.symbol
-                    : "Select stock..."}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <div className="flex items-center border-b px-3">
-                    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                    <input
-                      value={stockSearchQuery}
-                      onChange={(e) => handleStockSearch(e.target.value)}
-                      placeholder="Search stock or index..."
-                      className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                  </div>
-                  <CommandList>
-                    <CommandEmpty>
-                      {isSearching ? "Searching..." : "No stocks found."}
-                    </CommandEmpty>
-                    
-                    {stockSearchResults && stockSearchResults.length > 0 ? (
-                      <CommandGroup heading="Search Results">
-                        {stockSearchResults.map((stock) => (
-                          <CommandItem
-                            key={stock.symbol}
-                            value={stock.symbol}
-                            onSelect={() => handleStockSelect(stock.symbol)}
-                            className="data-[selected=true]:bg-gray-800 data-[selected=true]:text-white hover:bg-gray-800 hover:text-white"
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                formData.symbol === stock.symbol ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            <span className="font-medium">{stock.symbol}</span>
-                            <span className="ml-2 text-gray-500 text-xs">{stock.name}</span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    ) : (
-                      <CommandGroup heading="Popular Stocks & Indexes">
-                        {popularStocks.map((stock) => (
-                          <CommandItem
-                            key={stock.symbol}
-                            value={stock.symbol}
-                            onSelect={() => handleStockSelect(stock.symbol)}
-                            className="data-[selected=true]:bg-gray-800 data-[selected=true]:text-white hover:bg-gray-800 hover:text-white"
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                formData.symbol === stock.symbol ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            <span className="font-medium">{stock.symbol}</span>
-                            <span className="ml-2 text-gray-500 text-xs">{stock.name}</span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    )}
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
-          
-          {/* Amount and Frequency - Same Row */}
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="symbol">Stock Symbol</Label>
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-full justify-between text-left font-normal bg-white hover:bg-gray-100 text-gray-800 border-gray-300"
+                  >
+                    {formData.symbol
+                      ? stockSearchResults.find((stock) => stock.symbol === formData.symbol)?.symbol || formData.symbol
+                      : "Select stock..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <div className="flex items-center border-b px-3">
+                      <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                      <input
+                        value={stockSearchQuery}
+                        onChange={(e) => handleStockSearch(e.target.value)}
+                        placeholder="Search stock or index..."
+                        className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                      />
+                    </div>
+                    <CommandList>
+                      <CommandEmpty>
+                        {isSearching ? "Searching..." : "No stocks found."}
+                      </CommandEmpty>
+                      
+                      {stockSearchResults && stockSearchResults.length > 0 ? (
+                        <CommandGroup heading="Search Results">
+                          {stockSearchResults.map((stock) => (
+                            <CommandItem
+                              key={stock.symbol}
+                              value={stock.symbol}
+                              onSelect={() => handleStockSelect(stock.symbol)}
+                              className="data-[selected=true]:bg-gray-800 data-[selected=true]:text-white hover:bg-gray-800 hover:text-white"
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.symbol === stock.symbol ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <span className="font-medium">{stock.symbol}</span>
+                              <span className="ml-2 text-gray-500 text-xs">{stock.name}</span>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      ) : (
+                        <CommandGroup heading="Popular Stocks & Indexes">
+                          {popularStocks.map((stock) => (
+                            <CommandItem
+                              key={stock.symbol}
+                              value={stock.symbol}
+                              onSelect={() => handleStockSelect(stock.symbol)}
+                              className="data-[selected=true]:bg-gray-800 data-[selected=true]:text-white hover:bg-gray-800 hover:text-white"
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.symbol === stock.symbol ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <span className="font-medium">{stock.symbol}</span>
+                              <span className="ml-2 text-gray-500 text-xs">{stock.name}</span>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      )}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+            
             <div className="space-y-2">
               <Label htmlFor="amount">Investment Amount</Label>
               <Input
@@ -258,26 +242,6 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
               />
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="frequency">Investment Frequency</Label>
-              <Select 
-                value={formData.frequency} 
-                onValueChange={handleFrequencyChange}
-              >
-                <SelectTrigger id="frequency" className="w-full">
-                  <SelectValue placeholder="Select frequency" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-          {/* Start Date and End Date - Same Row */}
-          <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="startDate">Start Date</Label>
               <Input
@@ -305,6 +269,23 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
                 required
                 className="transition-all duration-300 focus:ring-gray-800 focus:border-gray-800"
               />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="frequency">Investment Frequency</Label>
+              <Select 
+                value={formData.frequency} 
+                onValueChange={handleFrequencyChange}
+              >
+                <SelectTrigger id="frequency" className="w-full">
+                  <SelectValue placeholder="Select frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
