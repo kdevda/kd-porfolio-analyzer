@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { InvestmentFormData, InvestmentSchedule, PortfolioPerformance } from "@/types";
@@ -19,7 +18,6 @@ const Results = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  // Get data from route state
   const [formData, setFormData] = useState<InvestmentFormData | null>(null);
   const [schedule, setSchedule] = useState<InvestmentSchedule[]>([]);
   const [performance, setPerformance] = useState<PortfolioPerformance | null>(null);
@@ -27,7 +25,6 @@ const Results = () => {
   const [reinvestDividends, setReinvestDividends] = useState(false);
   const [isRecalculating, setIsRecalculating] = useState(false);
   
-  // Initialize data from location state
   useEffect(() => {
     const { formData: initialFormData, schedule: initialSchedule, performance: initialPerformance, stockData: initialStockData } = location.state || {};
     
@@ -52,18 +49,15 @@ const Results = () => {
     setIsRecalculating(true);
     
     try {
-      // Update form data with new reinvestDividends setting
       const updatedFormData = {
         ...formData,
         reinvestDividends: checked
       };
       setFormData(updatedFormData);
       
-      // Recalculate schedule with dividend reinvestment setting
       const updatedSchedule = generateInvestmentSchedule(updatedFormData, stockData);
       setSchedule(updatedSchedule);
       
-      // Recalculate performance metrics
       const updatedPerformance = calculatePerformance(updatedSchedule);
       setPerformance(updatedPerformance);
       
@@ -89,6 +83,13 @@ const Results = () => {
     return null;
   }
   
+  const getInfoCardColor = (type: string) => {
+    if (type === 'positive') return 'bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200';
+    if (type === 'negative') return 'bg-gradient-to-br from-rose-50 to-rose-100 border-rose-200';
+    if (type === 'neutral') return 'bg-gradient-to-br from-sky-50 to-sky-100 border-sky-200';
+    return 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200';
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
@@ -98,7 +99,7 @@ const Results = () => {
             <Button 
               variant="outline" 
               onClick={handleBack}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-white hover:bg-gray-800 hover:text-white border-gray-300 text-gray-800"
             >
               <ArrowLeft className="h-4 w-4" />
               New Analysis
@@ -127,16 +128,14 @@ const Results = () => {
         </div>
         
         <div className={`mt-4 ${isMobile ? 'grid-cols-1 gap-8' : 'grid grid-cols-2 gap-6'}`}>
-          {/* Chart on the left */}
           <div className="h-fit mb-8">
             {schedule.length > 0 && (
               <PortfolioChart data={schedule} />
             )}
           </div>
           
-          {/* Additional details on the right */}
           <div className="h-fit mb-8">
-            <BlurBackground className="p-6">
+            <BlurBackground className="p-6 border-l-4 border-l-gray-800">
               <h2 className="text-xl font-semibold mb-4 text-gray-800">Additional Information</h2>
               <div className="space-y-3">
                 <p className="text-gray-600">
@@ -158,7 +157,7 @@ const Results = () => {
                 
                 <div className="pt-4 mt-4 border-t border-gray-200">
                   <h3 className="text-lg font-medium mb-3">Investment Insights</h3>
-                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div className={`p-4 rounded-lg border ${getInfoCardColor(performance.totalReturn >= 0 ? 'positive' : 'negative')}`}>
                     <p className="text-sm text-gray-700 mb-2">
                       <strong>Strategy Analysis:</strong> Your {formData.frequency} dollar-cost averaging approach for {formData.symbol} has {performance.totalReturn >= 0 ? "yielded positive returns" : "faced some challenges"}.
                     </p>
@@ -187,7 +186,6 @@ const Results = () => {
           </div>
         </div>
         
-        {/* Investment table spanning full width */}
         <div className="mt-4 mb-12">
           {schedule.length > 0 && (
             <InvestmentTable data={schedule} />
