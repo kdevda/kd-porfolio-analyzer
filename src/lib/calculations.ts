@@ -1,3 +1,4 @@
+
 import { InvestmentFormData, InvestmentSchedule, PortfolioPerformance, StockData } from "@/types";
 
 // Generate investment schedule based on form data and stock data
@@ -125,32 +126,40 @@ export const generateInvestmentSchedule = (
         }
       }
       
-      // Only create dividend entries if reinvestDividends is enabled
+      // Create a new dividend entry
+      let sharesPurchased = 0;
+      let investmentAmount = 0;
+      
+      // If reinvesting dividends, buy more shares
       if (reinvestDividends) {
-        // Create a new dividend entry
-        const sharesPurchased = parseFloat((dividendAmount / price).toFixed(6));
+        sharesPurchased = parseFloat((dividendAmount / price).toFixed(6));
+        investmentAmount = dividendAmount;
         totalShares += sharesPurchased;
-        
-        const currentValue = parseFloat((totalShares * price).toFixed(2));
-        
-        // IMPORTANT FIX: Use the previous totalInvested value and only add dividend amount if reinvesting
-        const entryTotalInvested = totalInvested + dividendAmount;
-        totalInvested = entryTotalInvested; // Update the running total
-        
-        schedule.push({
-          date,
-          amount: dividendAmount,
-          sharesPurchased,
-          price,
-          totalShares,
-          totalInvested: entryTotalInvested,
-          currentValue,
-          dividend,
-          cumulativeDividends
-        });
-        
-        processedDates.add(date);
       }
+      
+      const currentValue = parseFloat((totalShares * price).toFixed(2));
+      
+      // Add the dividend entry to the schedule - THE BUG FIX: Do not update totalInvested for dividend entries
+      // unless reinvesting
+      let entryTotalInvested = totalInvested;
+      if (reinvestDividends) {
+        entryTotalInvested += dividendAmount;
+        totalInvested = entryTotalInvested; // Update the running total only if reinvesting
+      }
+      
+      schedule.push({
+        date,
+        amount: investmentAmount,
+        sharesPurchased,
+        price,
+        totalShares,
+        totalInvested: entryTotalInvested,
+        currentValue,
+        dividend,
+        cumulativeDividends
+      });
+      
+      processedDates.add(date);
     }
   }
   
