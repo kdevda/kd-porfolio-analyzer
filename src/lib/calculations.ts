@@ -148,7 +148,7 @@ export const generateInvestmentSchedule = (
               dividend,
               cumulativeDividends
           });
-      }
+      
         
         processedDates.add(date);
       }
