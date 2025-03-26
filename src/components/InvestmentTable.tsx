@@ -9,31 +9,25 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 
 interface InvestmentTableProps {
   data: InvestmentSchedule[];
-  reinvestDividends: boolean;
 }
 
-const InvestmentTable = ({ data, reinvestDividends }: InvestmentTableProps) => {
+const InvestmentTable = ({ data }: InvestmentTableProps) => {
   const [showAll, setShowAll] = useState(false);
   const isMobile = useIsMobile();
   
-  // Filter out dividend entries if reinvestment is disabled
-  const filteredData = reinvestDividends 
-    ? data 
-    : data.filter(item => item.amount === data[0]?.amount || item.dividend === 0);
-  
   // Show limited entries or all based on state
-  const displayData = showAll ? filteredData : filteredData.slice(0, 10);
+  const displayData = showAll ? data : data.slice(0, 10);
   
   return (
     <BlurBackground className="p-4 md:p-6 animate-fade-in h-full">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl md:text-2xl font-medium text-gray-800">Investment Schedule</h2>
-        {filteredData.length > 10 && (
+        {data.length > 10 && (
           <button
             onClick={() => setShowAll(!showAll)}
             className="text-portfolio-blue hover:text-portfolio-navy text-sm font-medium transition-colors"
           >
-            {showAll ? "Show Less" : `Show All (${filteredData.length})`}
+            {showAll ? "Show Less" : `Show All (${data.length})`}
           </button>
         )}
       </div>
@@ -54,10 +48,7 @@ const InvestmentTable = ({ data, reinvestDividends }: InvestmentTableProps) => {
             </TableHeader>
             <TableBody>
               {displayData.map((item, index) => (
-                <TableRow 
-                  key={index}
-                  className={item.dividend && item.dividend > 0 ? "bg-blue-50" : ""}
-                >
+                <TableRow key={index}>
                   <TableCell>{item.date}</TableCell>
                   <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{formatCurrency(item.price)}</TableCell>
                   <TableCell>{formatCurrency(item.amount)}</TableCell>

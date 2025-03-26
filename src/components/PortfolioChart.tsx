@@ -90,8 +90,8 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
 
   const tickInterval = calculateTickInterval(chartData);
 
-  // The primary color for profit/loss
-  const profitLossColor = isOverallProfit ? "#10b981" : "#ef4444";
+  // Function to determine if a specific dot is profitable
+  const getDotFill = (entry: any) => entry.isProfit ? "#10b981" : "#ef4444";
 
   return (
     <BlurBackground className="p-4 md:p-6 animate-fade-in">
@@ -132,19 +132,12 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
             <Line
               type="monotone"
               dataKey="value"
-              stroke={profitLossColor}
+              stroke={isOverallProfit ? "#10b981" : "#ef4444"}
               strokeWidth={2}
               fill="none"
               dot={{ 
-                r: 3,
-                fill: "#FFFFFF", // Set a default fill color
-                stroke: profitLossColor, // Use stroke instead
-                strokeWidth: 2
-              }}
-              activeDot={{
-                r: 5,
-                fill: profitLossColor, // Use a static color instead of a function
-                // We can't use a function for the fill property since it expects a string
+                fill: getDotFill,
+                r: 3 
               }}
               animationDuration={1500}
               isAnimationActive={true}
