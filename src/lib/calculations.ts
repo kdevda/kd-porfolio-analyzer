@@ -134,8 +134,8 @@ export const generateInvestmentSchedule = (
         const currentValue = parseFloat((totalShares * price).toFixed(2));
         
         // IMPORTANT FIX: Use the previous totalInvested value and only add dividend amount if reinvesting
-        const entryTotalInvested = totalInvested + dividendAmount;
-        totalInvested = entryTotalInvested; // Update the running total
+        const previousTotalInvested = latestEntryBeforeDividend.totalInvested; // Use the last recorded investment total
+        const entryTotalInvested = reinvestDividends ? previousTotalInvested + dividendAmount : previousTotalInvested;
         
         schedule.push({
           date,
