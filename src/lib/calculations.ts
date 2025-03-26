@@ -1,3 +1,4 @@
+
 import { InvestmentFormData, InvestmentSchedule, PortfolioPerformance, StockData } from "@/types";
 
 // Generate investment schedule based on form data and stock data
@@ -120,22 +121,25 @@ export const generateInvestmentSchedule = (
             existingEntry.amount += dividendAmount;
             existingEntry.totalShares += additionalShares;
             existingEntry.currentValue = parseFloat((existingEntry.totalShares * price).toFixed(2));
+            
+            // For reinvested dividends, we need to increase the total invested amount
+            totalInvested += dividendAmount;
+            existingEntry.totalInvested = totalInvested;
           }
           continue;
         }
       }
       
-      // Only create dividend entries if reinvestDividends is enabled
+      // Create a new dividend entry
       if (reinvestDividends) {
-        // Create a new dividend entry
+        // Create a new dividend entry with reinvestment
         const sharesPurchased = parseFloat((dividendAmount / price).toFixed(6));
         totalShares += sharesPurchased;
         
         const currentValue = parseFloat((totalShares * price).toFixed(2));
         
-        // IMPORTANT FIX: Use the previous totalInvested value and only add dividend amount if reinvesting
-        const entryTotalInvested = totalInvested + dividendAmount;
-        totalInvested = entryTotalInvested; // Update the running total
+        // When reinvesting dividends, increase the total invested amount
+        totalInvested += dividendAmount;
         
         schedule.push({
           date,
@@ -143,8 +147,24 @@ export const generateInvestmentSchedule = (
           sharesPurchased,
           price,
           totalShares,
-          totalInvested: entryTotalInvested,
+          totalInvested,
           currentValue,
+          dividend,
+          cumulativeDividends
+        });
+        
+        processedDates.add(date);
+      } else {
+        // For dividend-only entries without reinvestment, we still want to record them
+        // but without changing share count or total invested
+        schedule.push({
+          date,
+          amount: dividendAmount,
+          sharesPurchased: 0,  // Not purchasing shares when not reinvesting
+          price,
+          totalShares, // Keep the same shares
+          totalInvested, // Keep the same total invested
+          currentValue: parseFloat((totalShares * price).toFixed(2)),
           dividend,
           cumulativeDividends
         });

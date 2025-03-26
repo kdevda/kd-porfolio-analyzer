@@ -48,10 +48,27 @@ const InvestmentTable = ({ data }: InvestmentTableProps) => {
             </TableHeader>
             <TableBody>
               {displayData.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell>{item.date}</TableCell>
+                <TableRow 
+                  key={index}
+                  className={item.dividend > 0 ? "bg-green-50/50" : ""}
+                >
+                  <TableCell>
+                    {item.date}
+                    {item.dividend > 0 && (
+                      <span className="ml-1 text-xs text-green-600">
+                        (Dividend)
+                      </span>
+                    )}
+                  </TableCell>
                   <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{formatCurrency(item.price)}</TableCell>
-                  <TableCell>{formatCurrency(item.amount)}</TableCell>
+                  <TableCell>
+                    {formatCurrency(item.amount)}
+                    {item.dividend > 0 && (
+                      <span className="ml-1 text-xs text-green-600">
+                        ({formatCurrency(item.dividend)}/share)
+                      </span>
+                    )}
+                  </TableCell>
                   <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{item.sharesPurchased.toFixed(4)}</TableCell>
                   <TableCell>{item.totalShares.toFixed(4)}</TableCell>
                   <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{formatCurrency(item.totalInvested)}</TableCell>
