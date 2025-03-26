@@ -126,31 +126,44 @@ export const generateInvestmentSchedule = (
       }
       
       // Only create dividend entries if reinvestDividends is enabled
-      if (reinvestDividends) {
-          const additionalShares = parseFloat((dividendAmount / price).toFixed(6));
-          totalShares += additionalShares;
+if (reinvestDividends) {
+  // Get the shares owned from the latest entry before this dividend date
+  const sharesOwned = latestEntryBeforeDividend.totalShares;
+
+  // Calculate the dividend amount based on the shares owned
+  const dividendAmount = parseFloat((sharesOwned * dividend).toFixed(2));
+
+  // Add dividend amount to cumulative dividends
+  cumulativeDividends += dividendAmount;
+
+        if (dividendAmount > 0) {
+          // Calculate how many shares can be purchased with the dividend
+          const sharesPurchased = parseFloat((dividendAmount / price).toFixed(6));
       
-          // Fix Total Invested Calculation
-          const previousTotalInvested = latestEntryBeforeDividend.totalInvested;
-          const entryTotalInvested = previousTotalInvested + dividendAmount;
+          // Update totalShares with the new shares purchased
+          totalShares += sharesPurchased;
       
-          // Fix Value Calculation
-          const correctValue = parseFloat((totalShares * price).toFixed(2));
+          // Update totalInvested (treating dividend as an additional investment)
+          const entryTotalInvested = latestEntryBeforeDividend.totalInvested + dividendAmount;
       
+          // Calculate the new current value based on the updated totalShares
+          const currentValue = parseFloat((totalShares * price).toFixed(2));
+      
+          // Push the new entry for the dividend reinvestment
           schedule.push({
-              date,
-              amount: dividendAmount,
-              sharesPurchased: additionalShares,
-              price,
-              totalShares,
-              totalInvested: entryTotalInvested,
-              currentValue: correctValue, // Corrected Value Column
-              dividend,
-              cumulativeDividends
+            date,
+            amount: dividendAmount,
+            sharesPurchased,
+            price,
+            totalShares,
+            totalInvested: entryTotalInvested,
+            currentValue,
+            dividend,
+            cumulativeDividends
           });
       
-        
-        processedDates.add(date);
+          processedDates.add(date); // Mark this dividend date as processed
+        }
       }
     }
   }
