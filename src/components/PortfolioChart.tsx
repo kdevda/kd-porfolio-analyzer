@@ -90,19 +90,19 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
 
   const tickInterval = calculateTickInterval(chartData);
 
-  // Function to determine if a specific dot is profitable
-  const getDotFill = (entry: any) => entry.isProfit ? "#10b981" : "#ef4444";
+  // Color for dots based on overall portfolio status
+  const dotFillColor = isOverallProfit ? "#10b981" : "#ef4444";
 
   return (
     <BlurBackground className="p-4 md:p-6 animate-fade-in">
       <h2 className="text-xl md:text-2xl font-medium text-gray-800 mb-4">Portfolio Growth</h2>
-      <div className="h-[400px]">
+      <div className="h-[300px] md:h-[400px]">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={chartData}
             margin={{ 
               top: 10, 
-              right: isMobile ? 10 : 30, 
+              right: isMobile ? 5 : 30, 
               left: isMobile ? 0 : 10, 
               bottom: 0 
             }}
@@ -136,7 +136,7 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
               strokeWidth={2}
               fill="none"
               dot={{ 
-                fill: getDotFill,
+                fill: dotFillColor,
                 r: 3 
               }}
               animationDuration={1500}

@@ -26,6 +26,11 @@ const Results = () => {
   const [reinvestDividends, setReinvestDividends] = useState(false);
   const [isRecalculating, setIsRecalculating] = useState(false);
   
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   useEffect(() => {
     const { formData: initialFormData, schedule: initialSchedule, performance: initialPerformance, stockData: initialStockData } = location.state || {};
     
@@ -197,14 +202,14 @@ const Results = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col mb-6 animate-fade-in">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">KD's Portfolio Analyzer</h1>
+      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        <div className="flex flex-col mb-4 sm:mb-6 animate-fade-in">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">KD's Portfolio Analyzer</h1>
             <Button 
               variant="outline" 
               onClick={handleBack}
-              className="flex items-center gap-2 bg-white hover:bg-gray-800 hover:text-white border-gray-300 text-gray-800"
+              className="flex items-center gap-2 self-start sm:self-auto bg-white hover:bg-gray-800 hover:text-white border-gray-300 text-gray-800"
             >
               <ArrowLeft className="h-4 w-4" />
               New Analysis
@@ -232,39 +237,39 @@ const Results = () => {
           {isRecalculating && <RefreshCw className="h-4 w-4 animate-spin ml-2" />}
         </div>
         
-        <div className={`mt-4 ${isMobile ? 'grid-cols-1 gap-8' : 'grid grid-cols-2 gap-6'}`}>
-          <div className="h-fit mb-8">
+        <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+          <div>
             {schedule.length > 0 && (
               <PortfolioChart data={schedule} />
             )}
           </div>
           
-          <div className="h-fit mb-8">
-            <BlurBackground className="p-4 md:p-6 h-[468px] overflow-auto shadow-lg rounded-lg">
+          <div>
+            <BlurBackground className="p-4 md:p-6 h-auto md:h-[468px] overflow-auto shadow-lg rounded-lg">
               <div className="flex items-center gap-2 mb-4">
                 <LightbulbIcon className="h-6 w-6 text-amber-500" />
                 <h2 className="text-xl md:text-2xl font-medium text-gray-800">Investment Insights</h2>
               </div>
               
-              <div className="grid grid-cols-2 gap-2">
-                <div className="p-2.5 rounded-lg shadow-sm bg-white border border-gray-100">
-                  <div className="flex items-start gap-1.5">
-                    <Calendar className="h-3.5 w-3.5 text-violet-600 mt-0.5" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="p-3 rounded-lg shadow-sm bg-white border border-gray-100">
+                  <div className="flex items-start gap-2">
+                    <Calendar className="h-4 w-4 text-violet-600 mt-0.5" />
                     <div>
-                      <h3 className="font-medium text-xs text-gray-800">Time in Market</h3>
-                      <p className="text-[10px] text-gray-600">
+                      <h3 className="font-medium text-sm text-gray-800">Time in Market</h3>
+                      <p className="text-xs text-gray-600">
                         {timeInMarket.investmentDates} investment dates over {timeInMarket.years.toFixed(1)} years
                       </p>
                     </div>
                   </div>
                 </div>
                 
-                <div className="p-2.5 rounded-lg shadow-sm bg-white border border-gray-100">
-                  <div className="flex items-start gap-1.5">
-                    <TrendingUp className="h-3.5 w-3.5 text-gray-700 mt-0.5" />
+                <div className="p-3 rounded-lg shadow-sm bg-white border border-gray-100">
+                  <div className="flex items-start gap-2">
+                    <TrendingUp className="h-4 w-4 text-gray-700 mt-0.5" />
                     <div>
-                      <h3 className="font-medium text-xs text-gray-800">Performance</h3>
-                      <p className="text-[10px] text-gray-600">
+                      <h3 className="font-medium text-sm text-gray-800">Performance</h3>
+                      <p className="text-xs text-gray-600">
                         {formatPercentage(performance?.percentageReturn || 0)} return on {formData?.symbol}
                       </p>
                     </div>
@@ -273,37 +278,37 @@ const Results = () => {
               </div>
               
               {dcaInsight && (
-                <div className="p-2.5 rounded-lg shadow-sm bg-white border border-gray-100 my-2">
-                  <div className="flex items-start gap-1.5">
-                    <AreaChart className="h-3.5 w-3.5 text-sky-600 mt-0.5" />
+                <div className="p-3 rounded-lg shadow-sm bg-white border border-gray-100 my-3">
+                  <div className="flex items-start gap-2">
+                    <AreaChart className="h-4 w-4 text-sky-600 mt-0.5" />
                     <div>
-                      <h3 className="font-medium text-xs text-gray-800">Dollar-Cost Averaging: {dcaInsight.effectiveness}</h3>
-                      <p className="text-[10px] text-gray-600">{dcaInsight.description}</p>
-                      <p className="text-[10px] text-gray-500 mt-0.5">Price volatility: {(dcaInsight.volatility * 100).toFixed(1)}%</p>
+                      <h3 className="font-medium text-sm text-gray-800">Dollar-Cost Averaging: {dcaInsight.effectiveness}</h3>
+                      <p className="text-xs text-gray-600">{dcaInsight.description}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Price volatility: {(dcaInsight.volatility * 100).toFixed(1)}%</p>
                     </div>
                   </div>
                 </div>
               )}
               
               {projections && (
-                <div className="mt-3">
+                <div className="mt-4">
                   <h3 className="text-sm font-medium mb-2 text-gray-800 flex items-center gap-1.5">
                     <Award className="h-4 w-4 text-emerald-600" />
                     Future Projections
                   </h3>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {projections.map((projection, index) => (
-                      <div key={index} className="p-2.5 rounded-lg shadow-sm bg-white border border-gray-100">
+                      <div key={index} className="p-3 rounded-lg shadow-sm bg-white border border-gray-100">
                         <div>
-                          <h4 className="font-medium text-xs text-gray-800">{projection.period}</h4>
-                          <div className="flex flex-col text-[10px]">
-                            <span className="font-semibold text-emerald-700">
+                          <h4 className="font-medium text-sm text-gray-800">{projection.period}</h4>
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-xs text-emerald-700">
                               {formatCurrency(projection.projected)}
                             </span>
-                            <span className="text-gray-500 text-[9px] mt-0.5">
+                            <span className="text-gray-500 text-xs mt-0.5">
                               Invested: {formatCurrency(projection.value)}
                             </span>
-                            <span className="text-[9px] text-emerald-600">
+                            <span className="text-xs text-emerald-600">
                               {formatPercentage((projection.projected/projection.value - 1) * 100)} growth
                             </span>
                           </div>
@@ -319,20 +324,20 @@ const Results = () => {
                   <Coins className="h-4 w-4 text-gray-600 mr-1.5" />
                   Investment Details
                 </h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-2.5 rounded-lg shadow-sm bg-white border border-gray-100">
-                    <p className="text-xs text-gray-800">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="p-3 rounded-lg shadow-sm bg-white border border-gray-100">
+                    <p className="text-sm text-gray-800">
                       <span className="font-medium">Stock:</span> {formData?.symbol}
                     </p>
-                    <p className="text-[10px] text-gray-600 mt-1">
+                    <p className="text-xs text-gray-600 mt-1">
                       <span className="font-medium">Frequency:</span> {formData?.frequency}
                     </p>
                   </div>
-                  <div className="p-2.5 rounded-lg shadow-sm bg-white border border-gray-100">
-                    <p className="text-xs text-gray-800">
+                  <div className="p-3 rounded-lg shadow-sm bg-white border border-gray-100">
+                    <p className="text-sm text-gray-800">
                       <span className="font-medium">Amount:</span> ${formData?.amount.toLocaleString()}
                     </p>
-                    <p className="text-[10px] text-gray-600 mt-1">
+                    <p className="text-xs text-gray-600 mt-1">
                       <span className="font-medium">Period:</span> {formData ? new Date(formData.startDate).toLocaleDateString('en-US', {year: '2-digit', month: '2-digit', day: '2-digit'}) : ''} to {formData ? new Date(formData.endDate).toLocaleDateString('en-US', {year: '2-digit', month: '2-digit', day: '2-digit'}) : ''}
                     </p>
                   </div>
@@ -342,7 +347,7 @@ const Results = () => {
           </div>
         </div>
         
-        <div className="mt-4 mb-12">
+        <div className="mt-6 mb-12">
           {schedule.length > 0 && (
             <InvestmentTable data={schedule} />
           )}

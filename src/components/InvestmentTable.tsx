@@ -25,43 +25,45 @@ const InvestmentTable = ({ data }: InvestmentTableProps) => {
         {data.length > 10 && (
           <button
             onClick={() => setShowAll(!showAll)}
-            className="text-portfolio-blue hover:text-portfolio-navy text-sm font-medium transition-colors"
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
           >
             {showAll ? "Show Less" : `Show All (${data.length})`}
           </button>
         )}
       </div>
       
-      <ScrollArea className="h-[400px] rounded-md border">
-        <div className="p-2 md:p-4">
-          <Table>
-            <TableHeader className="sticky top-0 bg-white z-10">
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead className={isMobile ? "hidden md:table-cell" : ""}>Price</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead className={isMobile ? "hidden md:table-cell" : ""}>Shares</TableHead>
-                <TableHead>Total Shares</TableHead>
-                <TableHead className={isMobile ? "hidden md:table-cell" : ""}>Total Invested</TableHead>
-                <TableHead>Value</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {displayData.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell>{item.date}</TableCell>
-                  <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{formatCurrency(item.price)}</TableCell>
-                  <TableCell>{formatCurrency(item.amount)}</TableCell>
-                  <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{item.sharesPurchased.toFixed(4)}</TableCell>
-                  <TableCell>{item.totalShares.toFixed(4)}</TableCell>
-                  <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{formatCurrency(item.totalInvested)}</TableCell>
-                  <TableCell>{formatCurrency(item.currentValue)}</TableCell>
+      <div className="overflow-x-auto">
+        <ScrollArea className="h-[400px] rounded-md border">
+          <div className="p-2 md:p-4 min-w-[700px]">
+            <Table>
+              <TableHeader className="sticky top-0 bg-white z-10">
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead className={isMobile ? "hidden md:table-cell" : ""}>Price</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead className={isMobile ? "hidden md:table-cell" : ""}>Shares</TableHead>
+                  <TableHead>Total Shares</TableHead>
+                  <TableHead className={isMobile ? "hidden md:table-cell" : ""}>Total Invested</TableHead>
+                  <TableHead>Value</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </ScrollArea>
+              </TableHeader>
+              <TableBody>
+                {displayData.map((item, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{item.date}</TableCell>
+                    <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{formatCurrency(item.price)}</TableCell>
+                    <TableCell>{formatCurrency(item.amount)}</TableCell>
+                    <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{item.sharesPurchased.toFixed(4)}</TableCell>
+                    <TableCell>{item.totalShares.toFixed(4)}</TableCell>
+                    <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{formatCurrency(item.totalInvested)}</TableCell>
+                    <TableCell>{formatCurrency(item.currentValue)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </ScrollArea>
+      </div>
     </BlurBackground>
   );
 };
