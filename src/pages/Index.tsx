@@ -81,10 +81,10 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <div className="text-center mb-12 animate-fade-in">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">KD Portfolio Analyzer</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">KD's Portfolio Analyzer</h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
             Analyze investment performance with dollar-cost averaging. Enter your investment details below to see how your portfolio would have performed over time.
           </p>
@@ -102,7 +102,7 @@ const Index = () => {
           <div className="flex justify-center items-center py-20 animate-pulse-slow">
             <BlurBackground className="p-6 text-center">
               <div className="flex flex-col items-center">
-                <div className="w-16 h-16 border-4 border-portfolio-blue border-t-transparent rounded-full animate-spin mb-4"></div>
+                <div className="w-16 h-16 border-4 border-gray-800 border-t-transparent rounded-full animate-spin mb-4"></div>
                 <h3 className="text-xl font-medium text-gray-800 mb-2">Analyzing Portfolio</h3>
                 <p className="text-gray-600">
                   Fetching historical data for {isLoading ? "your investment" : ""}...

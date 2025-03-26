@@ -32,10 +32,10 @@ const CustomTooltip = ({
     return (
       <BlurBackground className="p-3 text-xs">
         <p className="font-medium">{label}</p>
-        <p className="text-portfolio-blue">
+        <p className="text-gray-800">
           Value: {formatCurrency(Number(payload[0].value))}
         </p>
-        <p className="text-portfolio-green">
+        <p className="text-gray-600">
           Invested: {formatCurrency(Number(payload[1].value))}
         </p>
       </BlurBackground>
@@ -103,8 +103,8 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
               type="monotone"
               dataKey="invested"
               stackId="1"
-              stroke="#42A5F5"
-              fill="#90CAF9"
+              stroke="#888888"
+              fill="#CCCCCC"
               animationDuration={1500}
               isAnimationActive={true}
             />
@@ -112,8 +112,8 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
               type="monotone"
               dataKey="value"
               stackId="2"
-              stroke="#1E90FF"
-              fill="#1E90FF"
+              stroke="#333333"
+              fill="#888888"
               fillOpacity={0.5}
               animationDuration={1500}
               isAnimationActive={true}

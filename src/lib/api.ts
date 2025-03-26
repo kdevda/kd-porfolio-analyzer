@@ -40,18 +40,18 @@ export const fetchStockData = async (
     const timestamps = result.timestamp;
     const quotes = result.indicators.quote[0];
     
-    if (!timestamps || !quotes || !quotes.close) {
+    if (!timestamps || !quotes || !quotes.open) {
       throw new Error("Missing timestamp or price data");
     }
     
-    // Process the data
+    // Process the data - using OPEN prices now instead of close
     const stockData: StockData[] = [];
     for (let i = 0; i < timestamps.length; i++) {
-      if (quotes.close[i] !== null) {
+      if (quotes.open[i] !== null) {
         const date = new Date(timestamps[i] * 1000);
         stockData.push({
           date: date.toISOString().split("T")[0],
-          price: parseFloat(quotes.close[i].toFixed(2)),
+          price: parseFloat(quotes.open[i].toFixed(2)),
         });
       }
     }

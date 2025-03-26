@@ -27,10 +27,11 @@ export const generateInvestmentSchedule = (
     // Skip if no price data for this date
     if (!price) return;
     
-    const sharesPurchased = amount / price;
+    // Calculate shares purchased (round to 6 decimal places for accuracy)
+    const sharesPurchased = parseFloat((amount / price).toFixed(6));
     totalShares += sharesPurchased;
     totalInvested += amount;
-    const currentValue = totalShares * price;
+    const currentValue = parseFloat((totalShares * price).toFixed(2));
     
     schedule.push({
       date,
@@ -62,8 +63,8 @@ export const calculatePerformance = (
   
   const totalInvested = schedule[schedule.length - 1].totalInvested;
   const finalValue = schedule[schedule.length - 1].currentValue;
-  const totalReturn = finalValue - totalInvested;
-  const percentageReturn = (totalReturn / totalInvested) * 100;
+  const totalReturn = parseFloat((finalValue - totalInvested).toFixed(2));
+  const percentageReturn = parseFloat(((totalReturn / totalInvested) * 100).toFixed(2));
   
   // Calculate annualized return
   const firstDate = new Date(schedule[0].date);
@@ -71,9 +72,12 @@ export const calculatePerformance = (
   const yearsElapsed = (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
   
   // Use CAGR formula: (final/initial)^(1/years) - 1
-  const annualizedReturn = yearsElapsed > 0
-    ? (Math.pow(finalValue / totalInvested, 1 / yearsElapsed) - 1) * 100
-    : percentageReturn;
+  let annualizedReturn = 0;
+  if (yearsElapsed > 0) {
+    annualizedReturn = parseFloat(((Math.pow(finalValue / totalInvested, 1 / yearsElapsed) - 1) * 100).toFixed(2));
+  } else {
+    annualizedReturn = percentageReturn;
+  }
   
   return {
     totalInvested,

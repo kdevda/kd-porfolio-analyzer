@@ -19,19 +19,19 @@ const PerformanceMetrics = ({ performance, stockSymbol }: PerformanceMetricsProp
     {
       title: "Total Invested",
       value: formatCurrency(performance.totalInvested),
-      icon: <DollarSign className="h-5 w-5 text-portfolio-blue" />,
+      icon: <DollarSign className="h-5 w-5 text-gray-700" />,
       subtitle: "Principal amount",
     },
     {
       title: "Final Value",
       value: formatCurrency(performance.finalValue),
-      icon: <CircleCheck className="h-5 w-5 text-portfolio-blue" />,
+      icon: <CircleCheck className="h-5 w-5 text-gray-700" />,
       subtitle: "Current portfolio value",
     },
     {
       title: "Total Return",
       value: formatCurrency(performance.totalReturn),
-      icon: <TrendingUp className="h-5 w-5 text-portfolio-blue" />,
+      icon: <TrendingUp className="h-5 w-5 text-gray-700" />,
       subtitle: "Profit/Loss",
       isHighlighted: true,
       isPositive,
@@ -39,7 +39,7 @@ const PerformanceMetrics = ({ performance, stockSymbol }: PerformanceMetricsProp
     {
       title: "Percentage Return",
       value: formatPercentage(performance.percentageReturn),
-      icon: <ArrowUpRight className="h-5 w-5 text-portfolio-blue" />,
+      icon: <ArrowUpRight className="h-5 w-5 text-gray-700" />,
       subtitle: "Overall growth",
       isHighlighted: true,
       isPositive,
@@ -47,7 +47,7 @@ const PerformanceMetrics = ({ performance, stockSymbol }: PerformanceMetricsProp
     {
       title: "Annualized Return",
       value: formatPercentage(performance.annualizedReturn),
-      icon: <Calendar className="h-5 w-5 text-portfolio-blue" />,
+      icon: <Calendar className="h-5 w-5 text-gray-700" />,
       subtitle: "Yearly average",
       isHighlighted: true,
       isPositive,
@@ -72,8 +72,8 @@ const PerformanceMetrics = ({ performance, stockSymbol }: PerformanceMetricsProp
             className={`p-3 md:p-4 rounded-lg border card-hover ${
               metric.isHighlighted
                 ? metric.isPositive
-                  ? "border-portfolio-profit/30 bg-portfolio-profit/5"
-                  : "border-portfolio-loss/30 bg-portfolio-loss/5"
+                  ? "border-gray-300 bg-gray-50"
+                  : "border-gray-300 bg-gray-100"
                 : "border-gray-200 bg-white"
             }`}
           >
@@ -84,8 +84,8 @@ const PerformanceMetrics = ({ performance, stockSymbol }: PerformanceMetricsProp
                   className={`text-sm md:text-xl font-semibold ${
                     metric.isHighlighted
                       ? metric.isPositive
-                        ? "text-portfolio-profit"
-                        : "text-portfolio-loss"
+                        ? "text-gray-800"
+                        : "text-gray-700"
                       : "text-gray-800"
                   }`}
                 >

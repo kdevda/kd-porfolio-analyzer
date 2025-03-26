@@ -66,7 +66,7 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
   }, []);
 
   return (
-    <BlurBackground className="p-6 animate-fade-in">
+    <BlurBackground className="p-6 animate-fade-in max-w-3xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-6">
           <h2 className="text-2xl font-medium text-gray-800">Investment Parameters</h2>
@@ -81,7 +81,7 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
                 value={formData.symbol}
                 onChange={handleChange}
                 required
-                className="transition-all duration-300 focus:ring-portfolio-blue focus:border-portfolio-blue"
+                className="transition-all duration-300 focus:ring-gray-800 focus:border-gray-800"
               />
             </div>
             
@@ -96,7 +96,7 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
                 value={formData.amount || ""}
                 onChange={(e) => handleChange({ name: "amount", value: Number(e.target.value) })}
                 required
-                className="transition-all duration-300 focus:ring-portfolio-blue focus:border-portfolio-blue"
+                className="transition-all duration-300 focus:ring-gray-800 focus:border-gray-800"
               />
             </div>
             
@@ -110,7 +110,7 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
                 value={formData.startDate}
                 onChange={handleChange}
                 required
-                className="transition-all duration-300 focus:ring-portfolio-blue focus:border-portfolio-blue"
+                className="transition-all duration-300 focus:ring-gray-800 focus:border-gray-800"
               />
             </div>
             
@@ -125,7 +125,7 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
                 value={formData.endDate}
                 onChange={handleChange}
                 required
-                className="transition-all duration-300 focus:ring-portfolio-blue focus:border-portfolio-blue"
+                className="transition-all duration-300 focus:ring-gray-800 focus:border-gray-800"
               />
             </div>
             
@@ -150,7 +150,7 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
         
         <Button
           type="submit"
-          className="w-full bg-portfolio-blue hover:bg-portfolio-blue/90 text-white transition-all"
+          className="w-full bg-black hover:bg-gray-800 text-white transition-all"
           disabled={isLoading}
         >
           {isLoading ? (

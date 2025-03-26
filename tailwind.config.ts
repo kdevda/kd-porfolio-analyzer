@@ -64,12 +64,8 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				portfolio: {
-					blue: '#1E90FF',
-					green: '#42A5F5',
-					lightBlue: '#90CAF9',
-					navy: '#0A2463',
-					profit: '#4CAF50',
-					loss: '#F44336',
+					profit: '#4D4D4D',
+					loss: '#777777',
 				}
 			},
 			borderRadius: {
