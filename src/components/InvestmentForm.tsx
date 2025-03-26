@@ -147,86 +147,88 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
         <div className="space-y-6">
           <h2 className="text-2xl font-medium text-gray-800">Investment Parameters</h2>
           
+          {/* Stock Symbol - Full width on a single line */}
+          <div className="w-full">
+            <Label htmlFor="symbol">Stock Symbol</Label>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-full justify-between text-left font-normal bg-white hover:bg-gray-100 text-gray-800 border-gray-300"
+                >
+                  {formData.symbol
+                    ? stockSearchResults.find((stock) => stock.symbol === formData.symbol)?.symbol || formData.symbol
+                    : "Select stock..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <div className="flex items-center border-b px-3">
+                    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                    <input
+                      value={stockSearchQuery}
+                      onChange={(e) => handleStockSearch(e.target.value)}
+                      placeholder="Search stock or index..."
+                      className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
+                  <CommandList>
+                    <CommandEmpty>
+                      {isSearching ? "Searching..." : "No stocks found."}
+                    </CommandEmpty>
+                    
+                    {stockSearchResults && stockSearchResults.length > 0 ? (
+                      <CommandGroup heading="Search Results">
+                        {stockSearchResults.map((stock) => (
+                          <CommandItem
+                            key={stock.symbol}
+                            value={stock.symbol}
+                            onSelect={() => handleStockSelect(stock.symbol)}
+                            className="data-[selected=true]:bg-gray-800 data-[selected=true]:text-white hover:bg-gray-800 hover:text-white"
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                formData.symbol === stock.symbol ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <span className="font-medium">{stock.symbol}</span>
+                            <span className="ml-2 text-gray-500 text-xs">{stock.name}</span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    ) : (
+                      <CommandGroup heading="Popular Stocks & Indexes">
+                        {popularStocks.map((stock) => (
+                          <CommandItem
+                            key={stock.symbol}
+                            value={stock.symbol}
+                            onSelect={() => handleStockSelect(stock.symbol)}
+                            className="data-[selected=true]:bg-gray-800 data-[selected=true]:text-white hover:bg-gray-800 hover:text-white"
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                formData.symbol === stock.symbol ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <span className="font-medium">{stock.symbol}</span>
+                            <span className="ml-2 text-gray-500 text-xs">{stock.name}</span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    )}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          {/* Investment Amount and Frequency in a row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="symbol">Stock Symbol</Label>
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    className="w-full justify-between text-left font-normal bg-white hover:bg-gray-100 text-gray-800 border-gray-300"
-                  >
-                    {formData.symbol
-                      ? stockSearchResults.find((stock) => stock.symbol === formData.symbol)?.symbol || formData.symbol
-                      : "Select stock..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <Command>
-                    <div className="flex items-center border-b px-3">
-                      <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                      <input
-                        value={stockSearchQuery}
-                        onChange={(e) => handleStockSearch(e.target.value)}
-                        placeholder="Search stock or index..."
-                        className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-                      />
-                    </div>
-                    <CommandList>
-                      <CommandEmpty>
-                        {isSearching ? "Searching..." : "No stocks found."}
-                      </CommandEmpty>
-                      
-                      {stockSearchResults && stockSearchResults.length > 0 ? (
-                        <CommandGroup heading="Search Results">
-                          {stockSearchResults.map((stock) => (
-                            <CommandItem
-                              key={stock.symbol}
-                              value={stock.symbol}
-                              onSelect={() => handleStockSelect(stock.symbol)}
-                              className="data-[selected=true]:bg-gray-800 data-[selected=true]:text-white hover:bg-gray-800 hover:text-white"
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  formData.symbol === stock.symbol ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              <span className="font-medium">{stock.symbol}</span>
-                              <span className="ml-2 text-gray-500 text-xs">{stock.name}</span>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      ) : (
-                        <CommandGroup heading="Popular Stocks & Indexes">
-                          {popularStocks.map((stock) => (
-                            <CommandItem
-                              key={stock.symbol}
-                              value={stock.symbol}
-                              onSelect={() => handleStockSelect(stock.symbol)}
-                              className="data-[selected=true]:bg-gray-800 data-[selected=true]:text-white hover:bg-gray-800 hover:text-white"
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  formData.symbol === stock.symbol ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              <span className="font-medium">{stock.symbol}</span>
-                              <span className="ml-2 text-gray-500 text-xs">{stock.name}</span>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      )}
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
-            
             <div className="space-y-2">
               <Label htmlFor="amount">Investment Amount</Label>
               <Input
@@ -242,6 +244,26 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
               />
             </div>
             
+            <div className="space-y-2">
+              <Label htmlFor="frequency">Investment Frequency</Label>
+              <Select 
+                value={formData.frequency} 
+                onValueChange={handleFrequencyChange}
+              >
+                <SelectTrigger id="frequency" className="w-full">
+                  <SelectValue placeholder="Select frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          {/* Start Date and End Date in a row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="startDate">Start Date</Label>
               <Input
@@ -269,23 +291,6 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
                 required
                 className="transition-all duration-300 focus:ring-gray-800 focus:border-gray-800"
               />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="frequency">Investment Frequency</Label>
-              <Select 
-                value={formData.frequency} 
-                onValueChange={handleFrequencyChange}
-              >
-                <SelectTrigger id="frequency" className="w-full">
-                  <SelectValue placeholder="Select frequency" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
         </div>
