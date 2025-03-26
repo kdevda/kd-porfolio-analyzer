@@ -8,7 +8,7 @@ import { InvestmentFormData, StockInfo } from "@/types";
 import BlurBackground from "./ui/BlurBackground";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { searchStocks } from "@/lib/api";
 
@@ -98,13 +98,18 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
     }
   }, []);
 
-  // Popular stocks for quick selection
+  // Popular stocks and indices for quick selection
   const popularStocks = [
     { symbol: "AAPL", name: "Apple Inc." },
     { symbol: "MSFT", name: "Microsoft Corporation" },
     { symbol: "GOOGL", name: "Alphabet Inc." },
     { symbol: "AMZN", name: "Amazon.com Inc." },
     { symbol: "TSLA", name: "Tesla, Inc." },
+    { symbol: "META", name: "Meta Platforms, Inc." },
+    { symbol: "NVDA", name: "NVIDIA Corporation" },
+    { symbol: "JPM", name: "JPMorgan Chase & Co." },
+    { symbol: "V", name: "Visa Inc." },
+    // ETFs and Indices
     { symbol: "SPY", name: "SPDR S&P 500 ETF Trust" },
     { symbol: "QQQ", name: "Invesco QQQ Trust" },
     { symbol: "VOO", name: "Vanguard S&P 500 ETF" },
@@ -114,10 +119,26 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
     { symbol: "XLF", name: "Financial Select Sector SPDR Fund" },
     { symbol: "XLE", name: "Energy Select Sector SPDR Fund" },
     { symbol: "XLK", name: "Technology Select Sector SPDR Fund" },
-    { symbol: "META", name: "Meta Platforms, Inc." },
-    { symbol: "NVDA", name: "NVIDIA Corporation" },
-    { symbol: "JPM", name: "JPMorgan Chase & Co." },
-    { symbol: "V", name: "Visa Inc." }
+    // Additional popular stocks
+    { symbol: "BRK.B", name: "Berkshire Hathaway Inc." },
+    { symbol: "JNJ", name: "Johnson & Johnson" },
+    { symbol: "PG", name: "Procter & Gamble Co." },
+    { symbol: "UNH", name: "UnitedHealth Group Inc." },
+    { symbol: "HD", name: "Home Depot Inc." },
+    { symbol: "BAC", name: "Bank of America Corp." },
+    { symbol: "MA", name: "Mastercard Inc." },
+    { symbol: "DIS", name: "Walt Disney Co." },
+    { symbol: "INTC", name: "Intel Corporation" },
+    { symbol: "VZ", name: "Verizon Communications Inc." },
+    { symbol: "KO", name: "Coca-Cola Co." },
+    { symbol: "PFE", name: "Pfizer Inc." },
+    // International indices
+    { symbol: "EFA", name: "iShares MSCI EAFE ETF" },
+    { symbol: "EEM", name: "iShares MSCI Emerging Markets ETF" },
+    { symbol: "FXI", name: "iShares China Large-Cap ETF" },
+    { symbol: "EWJ", name: "iShares MSCI Japan ETF" },
+    { symbol: "EWG", name: "iShares MSCI Germany ETF" },
+    { symbol: "EWU", name: "iShares MSCI United Kingdom ETF" }
   ];
 
   return (
@@ -145,43 +166,48 @@ const InvestmentForm = ({ onSubmit, isLoading, initialData }: InvestmentFormProp
                 </PopoverTrigger>
                 <PopoverContent className="w-full p-0">
                   <Command>
-                    <CommandInput 
-                      placeholder="Search stock..." 
-                      value={stockSearchQuery}
-                      onValueChange={handleStockSearch}
-                      className="h-11 w-full"
-                    />
+                    <div className="flex items-center border-b px-3">
+                      <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                      <input
+                        value={stockSearchQuery}
+                        onChange={(e) => handleStockSearch(e.target.value)}
+                        placeholder="Search stock or index..."
+                        className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                      />
+                    </div>
                     <CommandList>
                       <CommandEmpty>
                         {isSearching ? "Searching..." : "No stocks found."}
                       </CommandEmpty>
                       
-                      <CommandGroup heading="Popular Stocks & Indexes">
-                        {popularStocks.map((stock) => (
-                          <CommandItem
-                            key={stock.symbol}
-                            value={stock.symbol}
-                            onSelect={() => handleStockSelect(stock.symbol)}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                formData.symbol === stock.symbol ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            <span className="font-medium">{stock.symbol}</span>
-                            <span className="ml-2 text-gray-500 text-xs">{stock.name}</span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                      
-                      {stockSearchResults && stockSearchResults.length > 0 && (
+                      {stockSearchResults && stockSearchResults.length > 0 ? (
                         <CommandGroup heading="Search Results">
                           {stockSearchResults.map((stock) => (
                             <CommandItem
                               key={stock.symbol}
                               value={stock.symbol}
                               onSelect={() => handleStockSelect(stock.symbol)}
+                              className="data-[selected=true]:bg-gray-800 data-[selected=true]:text-white hover:bg-gray-800 hover:text-white"
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.symbol === stock.symbol ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <span className="font-medium">{stock.symbol}</span>
+                              <span className="ml-2 text-gray-500 text-xs">{stock.name}</span>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      ) : (
+                        <CommandGroup heading="Popular Stocks & Indexes">
+                          {popularStocks.map((stock) => (
+                            <CommandItem
+                              key={stock.symbol}
+                              value={stock.symbol}
+                              onSelect={() => handleStockSelect(stock.symbol)}
+                              className="data-[selected=true]:bg-gray-800 data-[selected=true]:text-white hover:bg-gray-800 hover:text-white"
                             >
                               <Check
                                 className={cn(

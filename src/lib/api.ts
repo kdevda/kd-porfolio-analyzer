@@ -15,10 +15,14 @@ export const fetchStockData = async (
     console.log(`Fetching data for ${symbol} from ${startDate} to ${endDate}`);
     
     // Convert dates to UNIX timestamps (seconds)
-    const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
+    // Add a 30-day buffer before the start date to capture recent dividends
+    const bufferDate = new Date(startDate);
+    bufferDate.setDate(bufferDate.getDate() - 30);
+    
+    const startTimestamp = Math.floor(bufferDate.getTime() / 1000);
     const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000);
     
-    // Build the Yahoo Finance API URL
+    // Build the Yahoo Finance API URL with events=div to include dividend data
     const url = `${BASE_URL}${symbol}?period1=${startTimestamp}&period2=${endTimestamp}&interval=1d&includePrePost=false&events=div`;
     
     // Set up CORS proxy
@@ -56,23 +60,46 @@ export const fetchStockData = async (
         const date = new Date(timestamps[i] * 1000);
         const dateStr = date.toISOString().split("T")[0];
         
-        stockData.push({
-          date: dateStr,
-          price: parseFloat(quotes.open[i].toFixed(2)),
-          dividend: 0 // Default to 0, will add dividends later
-        });
+        // Only include dates on or after the actual start date (not the buffer)
+        if (new Date(dateStr) >= new Date(startDate) || Object.keys(dividends).some(
+          timestamp => new Date(parseInt(timestamp) * 1000).toISOString().split("T")[0] === dateStr
+        )) {
+          stockData.push({
+            date: dateStr,
+            price: parseFloat(quotes.open[i].toFixed(2)),
+            dividend: 0 // Default to 0, will add dividends later
+          });
+        }
       }
     }
     
     // Add dividends to the corresponding dates
     Object.keys(dividends).forEach(timestamp => {
       const divDate = new Date(parseInt(timestamp) * 1000).toISOString().split("T")[0];
-      const stockDataIndex = stockData.findIndex(item => item.date === divDate);
+      
+      // Find the entry with this date or create one if it doesn't exist
+      let stockDataIndex = stockData.findIndex(item => item.date === divDate);
       
       if (stockDataIndex !== -1) {
         stockData[stockDataIndex].dividend = parseFloat(dividends[timestamp].amount.toFixed(4));
+      } else if (new Date(divDate) >= new Date(startDate) && new Date(divDate) <= new Date(endDate)) {
+        // If the dividend date doesn't exist in our data but falls within our range,
+        // we need to add an entry for it with the closest available price
+        const closestEntry = findClosestDateEntry(stockData, divDate);
+        if (closestEntry) {
+          stockData.push({
+            date: divDate,
+            price: closestEntry.price,
+            dividend: parseFloat(dividends[timestamp].amount.toFixed(4))
+          });
+        }
       }
     });
+    
+    // Sort the data by date
+    stockData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    
+    console.log(`Fetched ${stockData.length} days of data with ${Object.keys(dividends).length} dividend events`);
     
     return stockData;
   } catch (error) {
@@ -89,11 +116,30 @@ export const fetchStockData = async (
   }
 };
 
+// Helper function to find the closest date entry to a target date
+function findClosestDateEntry(stockData: StockData[], targetDate: string): StockData | null {
+  if (!stockData.length) return null;
+  
+  const targetTime = new Date(targetDate).getTime();
+  let closestEntry = stockData[0];
+  let closestDistance = Math.abs(new Date(closestEntry.date).getTime() - targetTime);
+  
+  for (let i = 1; i < stockData.length; i++) {
+    const distance = Math.abs(new Date(stockData[i].date).getTime() - targetTime);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestEntry = stockData[i];
+    }
+  }
+  
+  return closestEntry;
+}
+
 export const searchStocks = async (query: string): Promise<StockInfo[]> => {
   try {
     if (!query || query.length < 2) return [];
     
-    const url = `${SEARCH_URL}?q=${encodeURIComponent(query)}&quotesCount=10&newsCount=0`;
+    const url = `${SEARCH_URL}?q=${encodeURIComponent(query)}&quotesCount=20&newsCount=0`;
     const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
     
     const response = await fetch(proxyUrl);
@@ -108,13 +154,27 @@ export const searchStocks = async (query: string): Promise<StockInfo[]> => {
       return [];
     }
     
-    return data.quotes
-      .filter((quote: any) => quote.symbol && quote.shortname)
+    // Combine API results with popular stocks for better coverage
+    const apiResults = data.quotes
+      .filter((quote: any) => quote.symbol && (quote.shortname || quote.longname))
       .map((quote: any) => ({
         symbol: quote.symbol,
         name: quote.shortname || quote.longname || "",
         exchange: quote.exchange || ""
       }));
+    
+    // Get matching popular stocks
+    const popularResults = getPopularStocks(query);
+    
+    // Combine results, removing duplicates by symbol
+    const combinedResults = [...apiResults];
+    popularResults.forEach(stock => {
+      if (!combinedResults.some(s => s.symbol === stock.symbol)) {
+        combinedResults.push(stock);
+      }
+    });
+    
+    return combinedResults;
   } catch (error) {
     console.error("Error searching stocks:", error);
     return getPopularStocks(query);
@@ -164,14 +224,16 @@ const generateMockStockData = (
   return data;
 };
 
-// Fallback function for stock search
+// Fallback function for stock search with a comprehensive list of stocks and indices
 const getPopularStocks = (query: string): StockInfo[] => {
   const stocks = [
+    // Major US Stocks
     { symbol: "AAPL", name: "Apple Inc." },
     { symbol: "MSFT", name: "Microsoft Corporation" },
-    { symbol: "GOOGL", name: "Alphabet Inc." },
+    { symbol: "GOOGL", name: "Alphabet Inc. Class A" },
+    { symbol: "GOOG", name: "Alphabet Inc. Class C" },
     { symbol: "AMZN", name: "Amazon.com Inc." },
-    { symbol: "FB", name: "Meta Platforms, Inc." },
+    { symbol: "META", name: "Meta Platforms, Inc." },
     { symbol: "TSLA", name: "Tesla, Inc." },
     { symbol: "NVDA", name: "NVIDIA Corporation" },
     { symbol: "JPM", name: "JPMorgan Chase & Co." },
@@ -186,9 +248,46 @@ const getPopularStocks = (query: string): StockInfo[] => {
     { symbol: "DIS", name: "The Walt Disney Company" },
     { symbol: "PYPL", name: "PayPal Holdings, Inc." },
     { symbol: "ADBE", name: "Adobe Inc." },
-    { symbol: "PFE", name: "Pfizer Inc." }
+    { symbol: "PFE", name: "Pfizer Inc." },
+    { symbol: "NFLX", name: "Netflix, Inc." },
+    { symbol: "INTC", name: "Intel Corporation" },
+    { symbol: "CRM", name: "Salesforce, Inc." },
+    { symbol: "CSCO", name: "Cisco Systems, Inc." },
+    // Major ETFs
+    { symbol: "SPY", name: "SPDR S&P 500 ETF Trust" },
+    { symbol: "QQQ", name: "Invesco QQQ Trust" },
+    { symbol: "IVV", name: "iShares Core S&P 500 ETF" },
+    { symbol: "VTI", name: "Vanguard Total Stock Market ETF" },
+    { symbol: "VOO", name: "Vanguard S&P 500 ETF" },
+    { symbol: "BND", name: "Vanguard Total Bond Market ETF" },
+    { symbol: "VEA", name: "Vanguard FTSE Developed Markets ETF" },
+    { symbol: "VWO", name: "Vanguard FTSE Emerging Markets ETF" },
+    { symbol: "AGG", name: "iShares Core U.S. Aggregate Bond ETF" },
+    { symbol: "GLD", name: "SPDR Gold Shares" },
+    { symbol: "DIA", name: "SPDR Dow Jones Industrial Average ETF" },
+    { symbol: "XLF", name: "Financial Select Sector SPDR Fund" },
+    { symbol: "XLE", name: "Energy Select Sector SPDR Fund" },
+    { symbol: "XLK", name: "Technology Select Sector SPDR Fund" },
+    { symbol: "XLV", name: "Health Care Select Sector SPDR Fund" },
+    { symbol: "XLU", name: "Utilities Select Sector SPDR Fund" },
+    { symbol: "XLI", name: "Industrial Select Sector SPDR Fund" },
+    { symbol: "XLP", name: "Consumer Staples Select Sector SPDR Fund" },
+    { symbol: "XLY", name: "Consumer Discretionary Select Sector SPDR Fund" },
+    { symbol: "XLB", name: "Materials Select Sector SPDR Fund" },
+    // International indices
+    { symbol: "EFA", name: "iShares MSCI EAFE ETF" },
+    { symbol: "EEM", name: "iShares MSCI Emerging Markets ETF" },
+    { symbol: "FXI", name: "iShares China Large-Cap ETF" },
+    { symbol: "EWJ", name: "iShares MSCI Japan ETF" },
+    { symbol: "EWG", name: "iShares MSCI Germany ETF" },
+    { symbol: "EWU", name: "iShares MSCI United Kingdom ETF" },
+    { symbol: "EWZ", name: "iShares MSCI Brazil ETF" },
+    { symbol: "EWY", name: "iShares MSCI South Korea ETF" },
+    { symbol: "EWC", name: "iShares MSCI Canada ETF" },
+    { symbol: "EWA", name: "iShares MSCI Australia ETF" }
   ];
   
+  // Filter based on query, checking both symbol and name
   return stocks.filter(stock => 
     stock.symbol.toLowerCase().includes(query.toLowerCase()) || 
     stock.name.toLowerCase().includes(query.toLowerCase())

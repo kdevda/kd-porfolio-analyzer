@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { InvestmentFormData, InvestmentSchedule, PortfolioPerformance } from "@/types";
@@ -5,7 +6,7 @@ import PortfolioChart from "@/components/PortfolioChart";
 import InvestmentTable from "@/components/InvestmentTable";
 import PerformanceMetrics from "@/components/PerformanceMetrics";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { ArrowLeft, RefreshCw, LightbulbIcon, TrendingUp, Coins, AreaChart, Calendar } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -87,8 +88,91 @@ const Results = () => {
     if (type === 'positive') return 'bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200';
     if (type === 'negative') return 'bg-gradient-to-br from-rose-50 to-rose-100 border-rose-200';
     if (type === 'neutral') return 'bg-gradient-to-br from-sky-50 to-sky-100 border-sky-200';
+    if (type === 'insight') return 'bg-gradient-to-br from-violet-50 to-violet-100 border-violet-200';
+    if (type === 'warning') return 'bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200';
     return 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200';
   };
+
+  // Calculate annualized return for specific time periods
+  const getForwardProjection = () => {
+    if (!performance) return null;
+    
+    const { annualizedReturn, totalInvested } = performance;
+    const monthlyInvestment = formData.amount;
+    
+    // Project future balances
+    const projections = [
+      { 
+        period: "1 Year", 
+        value: totalInvested + (monthlyInvestment * 12),
+        projected: calculateFutureValue(totalInvested, annualizedReturn / 100, 1, monthlyInvestment * 12)
+      },
+      { 
+        period: "5 Years", 
+        value: totalInvested + (monthlyInvestment * 12 * 5),
+        projected: calculateFutureValue(totalInvested, annualizedReturn / 100, 5, monthlyInvestment * 12)
+      },
+      { 
+        period: "10 Years", 
+        value: totalInvested + (monthlyInvestment * 12 * 10),
+        projected: calculateFutureValue(totalInvested, annualizedReturn / 100, 10, monthlyInvestment * 12)
+      }
+    ];
+    
+    return projections;
+  };
+  
+  // Calculate future value with additional contributions
+  const calculateFutureValue = (
+    principal: number, 
+    annualRate: number, 
+    years: number, 
+    yearlyContribution: number
+  ) => {
+    if (annualRate <= -1) return principal + (yearlyContribution * years); // Handle extreme negative returns
+    
+    // Future value of principal
+    const futureValueOfPrincipal = principal * Math.pow(1 + annualRate, years);
+    
+    // Future value of regular additions (if rate is not 0)
+    let futureValueOfAdditions = 0;
+    if (annualRate !== 0) {
+      futureValueOfAdditions = yearlyContribution * (Math.pow(1 + annualRate, years) - 1) / annualRate;
+    } else {
+      futureValueOfAdditions = yearlyContribution * years;
+    }
+    
+    return futureValueOfPrincipal + futureValueOfAdditions;
+  };
+  
+  const projections = getForwardProjection();
+  
+  // Calculate DCA effectiveness
+  const dcaEffectiveness = () => {
+    if (schedule.length < 2) return null;
+    
+    // Find highest and lowest purchase prices
+    const prices = schedule.map(entry => entry.price);
+    const highestPrice = Math.max(...prices);
+    const lowestPrice = Math.min(...prices);
+    const avgPrice = schedule.reduce((sum, entry) => sum + entry.price, 0) / schedule.length;
+    const priceVolatility = (highestPrice - lowestPrice) / avgPrice;
+    
+    let effectiveness = "Low";
+    let description = "With low price volatility, dollar-cost averaging provided limited benefits compared to lump-sum investing.";
+    
+    if (priceVolatility > 0.3) {
+      effectiveness = "High";
+      description = "With significant price volatility, your dollar-cost averaging strategy was highly effective at reducing average cost basis.";
+    } else if (priceVolatility > 0.15) {
+      effectiveness = "Medium";
+      description = "With moderate price volatility, your dollar-cost averaging strategy provided some benefits in reducing average cost basis.";
+    }
+    
+    return { effectiveness, description, volatility: priceVolatility };
+  };
+  
+  const dcaInsight = dcaEffectiveness();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -136,50 +220,92 @@ const Results = () => {
           
           <div className="h-fit mb-8">
             <BlurBackground className="p-6 border-l-4 border-l-gray-800">
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">Additional Information</h2>
-              <div className="space-y-3">
-                <p className="text-gray-600">
-                  Stock: <span className="font-medium text-gray-800">{formData.symbol}</span>
-                </p>
-                <p className="text-gray-600">
-                  Investment Period: <span className="font-medium text-gray-800">
-                    {new Date(formData.startDate).toLocaleDateString()} to {new Date(formData.endDate).toLocaleDateString()}
-                  </span>
-                </p>
-                <p className="text-gray-600">
-                  Frequency: <span className="font-medium text-gray-800">{formData.frequency}</span>
-                </p>
-                <p className="text-gray-600">
-                  Amount per Investment: <span className="font-medium text-gray-800">
-                    ${formData.amount.toLocaleString()}
-                  </span>
-                </p>
-                
-                <div className="pt-4 mt-4 border-t border-gray-200">
-                  <h3 className="text-lg font-medium mb-3">Investment Insights</h3>
-                  <div className={`p-4 rounded-lg border ${getInfoCardColor(performance.totalReturn >= 0 ? 'positive' : 'negative')}`}>
-                    <p className="text-sm text-gray-700 mb-2">
-                      <strong>Strategy Analysis:</strong> Your {formData.frequency} dollar-cost averaging approach for {formData.symbol} has {performance.totalReturn >= 0 ? "yielded positive returns" : "faced some challenges"}.
-                    </p>
-                    
-                    {performance.totalReturn > 0 && (
-                      <p className="text-sm text-gray-700 mb-2">
-                        <strong>Consider:</strong> With a return of {formatPercentage(performance.percentageReturn)}, you might explore increasing your position or diversifying with similar assets in this sector.
+              <div className="flex items-center gap-2 mb-4">
+                <LightbulbIcon className="h-6 w-6 text-amber-500" />
+                <h2 className="text-xl md:text-2xl font-medium text-gray-800">Investment Insights</h2>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div className={`p-4 rounded-lg border ${getInfoCardColor('insight')}`}>
+                  <div className="flex items-start gap-3">
+                    <Calendar className="h-5 w-5 text-violet-600 mt-1" />
+                    <div>
+                      <h3 className="font-medium text-gray-800 mb-1">Time in Market</h3>
+                      <p className="text-sm text-gray-600">
+                        {schedule.length} investment dates over {(schedule.length / 21).toFixed(1)} months
                       </p>
-                    )}
-                    
-                    {performance.totalReturn <= 0 && (
-                      <p className="text-sm text-gray-700 mb-2">
-                        <strong>Consider:</strong> Market timing can be challenging. Extending your investment horizon might help weather short-term volatility.
-                      </p>
-                    )}
-                    
-                    <p className="text-sm text-gray-700">
-                      <strong>Dividend Impact:</strong> {performance.dividendsReceived > 0 
-                        ? `Dividends contribute ${formatCurrency(performance.dividendsReceived)} (${((performance.dividendsReceived / performance.totalInvested) * 100).toFixed(2)}%) to your returns. ${reinvestDividends ? "Reinvesting them compounds your growth potential." : "Consider reinvesting them for compound growth."}`
-                        : "This asset doesn't appear to pay significant dividends. Consider diversifying with some dividend-paying stocks for income."}
-                    </p>
+                    </div>
                   </div>
+                </div>
+                
+                <div className={`p-4 rounded-lg border ${getInfoCardColor(performance.totalReturn >= 0 ? 'positive' : 'negative')}`}>
+                  <div className="flex items-start gap-3">
+                    <TrendingUp className="h-5 w-5 text-gray-700 mt-1" />
+                    <div>
+                      <h3 className="font-medium text-gray-800 mb-1">Performance</h3>
+                      <p className="text-sm text-gray-600">
+                        {formatPercentage(performance.percentageReturn)} return on {formData.symbol}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {dcaInsight && (
+                <div className={`p-4 rounded-lg border ${getInfoCardColor('neutral')} mb-6`}>
+                  <div className="flex items-start gap-3">
+                    <AreaChart className="h-5 w-5 text-sky-600 mt-1" />
+                    <div>
+                      <h3 className="font-medium text-gray-800 mb-1">Dollar-Cost Averaging Effectiveness: {dcaInsight.effectiveness}</h3>
+                      <p className="text-sm text-gray-600">{dcaInsight.description}</p>
+                      <p className="text-xs text-gray-500 mt-1">Price volatility: {(dcaInsight.volatility * 100).toFixed(1)}%</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {projections && (
+                <div>
+                  <h3 className="text-lg font-medium mb-3 text-gray-800">Future Projections</h3>
+                  <div className="space-y-3">
+                    {projections.map((projection, index) => (
+                      <div key={index} className={`p-4 rounded-lg border ${getInfoCardColor('positive')}`}>
+                        <div className="flex items-start gap-3">
+                          <Coins className="h-5 w-5 text-emerald-600 mt-1" />
+                          <div>
+                            <h4 className="font-medium text-gray-800">{projection.period}</h4>
+                            <p className="text-sm text-gray-600 mt-1">
+                              If continued at {formatPercentage(performance.annualizedReturn)} return:
+                              <span className="font-semibold block text-emerald-700 mt-1">
+                                {formatCurrency(projection.projected)}
+                              </span>
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Total invested: {formatCurrency(projection.value)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+                            
+              <div className="pt-4 mt-4 border-t border-gray-200">
+                <h3 className="text-lg font-medium mb-3">Basic Information</h3>
+                <div className="space-y-2 text-sm">
+                  <p className="text-gray-600">
+                    <span className="font-medium">Stock:</span> {formData.symbol}
+                  </p>
+                  <p className="text-gray-600">
+                    <span className="font-medium">Investment Period:</span> {new Date(formData.startDate).toLocaleDateString()} to {new Date(formData.endDate).toLocaleDateString()}
+                  </p>
+                  <p className="text-gray-600">
+                    <span className="font-medium">Frequency:</span> {formData.frequency}
+                  </p>
+                  <p className="text-gray-600">
+                    <span className="font-medium">Amount per Investment:</span> ${formData.amount.toLocaleString()}
+                  </p>
                 </div>
               </div>
             </BlurBackground>

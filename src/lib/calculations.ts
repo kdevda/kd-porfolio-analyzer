@@ -12,59 +12,173 @@ export const generateInvestmentSchedule = (
   let totalInvested = 0;
   let cumulativeDividends = 0;
   
+  // Sort stock data by date to ensure chronological order
+  const sortedStockData = [...stockData].sort((a, b) => 
+    new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+  
   // Create a map of dates to prices and dividends for quick lookup
   const dataMap = new Map<string, { price: number, dividend?: number }>();
-  stockData.forEach(data => {
+  sortedStockData.forEach(data => {
     dataMap.set(data.date, { 
       price: data.price,
       dividend: data.dividend || 0
     });
   });
   
-  // Generate investment dates based on frequency
-  const investmentDates = getInvestmentDates(startDate, endDate, frequency);
+  // Find the first available trading day on or after the start date
+  let adjustedStartDate = startDate;
+  const startDateTime = new Date(startDate).getTime();
+  const availableDates = sortedStockData.map(data => data.date);
   
-  // Fill the schedule
-  investmentDates.forEach(date => {
+  // Find the first available date that is on or after the requested start date
+  for (const date of availableDates) {
+    if (new Date(date).getTime() >= startDateTime) {
+      adjustedStartDate = date;
+      break;
+    }
+  }
+  
+  console.log(`Adjusted start date from ${startDate} to ${adjustedStartDate} due to data availability`);
+  
+  // Generate investment dates based on frequency
+  const investmentDates = getInvestmentDates(adjustedStartDate, endDate, frequency);
+  
+  // Process regular investments
+  const processedDates = new Set<string>();
+  for (const date of investmentDates) {
     const data = dataMap.get(date);
     
     // Skip if no price data for this date
-    if (!data || !data.price) return;
+    if (!data || !data.price) continue;
     
+    processedDates.add(date);
     const price = data.price;
-    const dividend = data.dividend || 0;
     
-    // Calculate dividend amount based on current shares
-    const dividendAmount = totalShares * dividend;
-    cumulativeDividends += dividendAmount;
-    
-    // Determine amount to invest (include reinvested dividends if enabled)
-    let investmentAmount = amount;
-    if (reinvestDividends && dividendAmount > 0) {
-      investmentAmount += dividendAmount;
-    }
-    
-    // Calculate shares purchased (round to 6 decimal places for accuracy)
-    const sharesPurchased = parseFloat((investmentAmount / price).toFixed(6));
+    // Calculate shares purchased
+    const sharesPurchased = parseFloat((amount / price).toFixed(6));
     totalShares += sharesPurchased;
-    totalInvested += amount; // We only count the regular investment in totalInvested
-    const currentValue = parseFloat((totalShares * price).toFixed(2));
+    totalInvested += amount;
     
+    // Update the schedule entry
+    const currentValue = parseFloat((totalShares * price).toFixed(2));
     schedule.push({
       date,
-      amount: investmentAmount,
+      amount,
       sharesPurchased,
       price,
       totalShares,
       totalInvested,
       currentValue,
-      dividend,
+      dividend: 0,
       cumulativeDividends
     });
-  });
+  }
+  
+  // Add dividend entries and process dividend reinvestment separately
+  if (sortedStockData.some(data => data.dividend && data.dividend > 0)) {
+    const dividendDates = sortedStockData
+      .filter(data => data.dividend && data.dividend > 0)
+      .map(data => data.date);
+    
+    // For each dividend date, check if we should add a dividend entry
+    for (const date of dividendDates) {
+      // Skip dividend dates that are before our first investment or after our last one
+      if (new Date(date) < new Date(adjustedStartDate) ||
+          new Date(date) > new Date(endDate)) {
+        continue;
+      }
+      
+      // Find the latest schedule entry before this dividend date
+      const latestEntryBeforeDividend = findLatestEntryBeforeDate(schedule, date);
+      if (!latestEntryBeforeDividend) continue;
+      
+      const data = dataMap.get(date);
+      if (!data || !data.price || !data.dividend) continue;
+      
+      const price = data.price;
+      const dividend = data.dividend;
+      
+      // Calculate dividend amount based on shares owned
+      const sharesOwned = latestEntryBeforeDividend.totalShares;
+      const dividendAmount = parseFloat((sharesOwned * dividend).toFixed(2));
+      
+      if (dividendAmount <= 0) continue;
+      
+      cumulativeDividends += dividendAmount;
+      
+      // If we already have an entry for this date, update it instead of creating a new one
+      if (processedDates.has(date)) {
+        const existingEntry = schedule.find(entry => entry.date === date);
+        if (existingEntry) {
+          existingEntry.dividend = dividend;
+          existingEntry.cumulativeDividends = cumulativeDividends;
+          
+          // If reinvesting dividends, add more shares
+          if (reinvestDividends) {
+            const additionalShares = parseFloat((dividendAmount / price).toFixed(6));
+            existingEntry.sharesPurchased += additionalShares;
+            existingEntry.amount += dividendAmount;
+            existingEntry.totalShares += additionalShares;
+            existingEntry.currentValue = parseFloat((existingEntry.totalShares * price).toFixed(2));
+          }
+          continue;
+        }
+      }
+      
+      // Create a new dividend entry
+      let sharesPurchased = 0;
+      let investmentAmount = 0;
+      
+      // If reinvesting dividends, buy more shares
+      if (reinvestDividends) {
+        sharesPurchased = parseFloat((dividendAmount / price).toFixed(6));
+        investmentAmount = dividendAmount;
+        totalShares += sharesPurchased;
+      }
+      
+      const currentValue = parseFloat((totalShares * price).toFixed(2));
+      
+      // Add the dividend entry to the schedule
+      schedule.push({
+        date,
+        amount: investmentAmount,
+        sharesPurchased,
+        price,
+        totalShares,
+        totalInvested, // Total invested remains the same for dividend entries (not counting reinvestment)
+        currentValue,
+        dividend,
+        cumulativeDividends
+      });
+      
+      processedDates.add(date);
+    }
+  }
+  
+  // Sort the schedule by date
+  schedule.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   
   return schedule;
 };
+
+// Helper function to find the latest entry before a given date
+function findLatestEntryBeforeDate(schedule: InvestmentSchedule[], targetDate: string): InvestmentSchedule | null {
+  const targetTime = new Date(targetDate).getTime();
+  
+  let latestEntry = null;
+  let latestTime = 0;
+  
+  for (const entry of schedule) {
+    const entryTime = new Date(entry.date).getTime();
+    if (entryTime < targetTime && entryTime > latestTime) {
+      latestEntry = entry;
+      latestTime = entryTime;
+    }
+  }
+  
+  return latestEntry;
+}
 
 // Calculate overall portfolio performance
 export const calculatePerformance = (
@@ -161,7 +275,7 @@ function getInvestmentDates(
   }
   
   return dates;
-};
+}
 
 // Format currency values
 export const formatCurrency = (value: number): string => {
