@@ -79,7 +79,7 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
     return `${date.getMonth() + 1}/${date.getFullYear().toString().slice(2)}`;
   };
 
-  // Function to determine tick interval dynamically
+  // Function to calculate tick interval dynamically
   const calculateTickInterval = (data: any[]) => {
     if (data.length <= 6) return 1;
     if (data.length <= 12) return 2;
@@ -90,8 +90,8 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
 
   const tickInterval = calculateTickInterval(chartData);
 
-  // Function to determine if a specific point is profitable or not
-  const getLineColor = (entry: any) => entry.isProfit ? "#10b981" : "#ef4444";
+  // Function to determine if a specific dot is profitable
+  const getDotFill = (entry: any) => entry.isProfit ? "#10b981" : "#ef4444";
 
   return (
     <BlurBackground className="p-4 md:p-6 animate-fade-in">
@@ -134,7 +134,11 @@ const PortfolioChart = ({ data }: PortfolioChartProps) => {
               dataKey="value"
               stroke={isOverallProfit ? "#10b981" : "#ef4444"}
               strokeWidth={2}
-              dot={{ fill: getLineColor, r: 3 }}
+              fill="none"
+              dot={{ 
+                fill: getDotFill,
+                r: 3 
+              }}
               animationDuration={1500}
               isAnimationActive={true}
             />
