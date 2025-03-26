@@ -16,12 +16,13 @@ const PerformanceMetrics = ({ performance, stockSymbol, hasDividendData = false 
   const isPositive = performance.totalReturn >= 0;
   const isMobile = useIsMobile();
   
+  // Update dividend display logic
   const dividendValue = hasDividendData 
     ? formatCurrency(performance.dividendsReceived || 0)
     : "Not available";
   
   const dividendSubtitle = hasDividendData 
-    ? "Total dividends" 
+    ? "Total dividends received" 
     : "Not a dividend-paying stock";
   
   const metricsData = [
@@ -59,7 +60,7 @@ const PerformanceMetrics = ({ performance, stockSymbol, hasDividendData = false 
       icon: <Gift className="h-4 w-4 md:h-5 md:w-5 text-gray-700" />,
       subtitle: dividendSubtitle,
       isHighlighted: true,
-      isPositive: hasDividendData,
+      isPositive: hasDividendData && performance.dividendsReceived > 0,
     },
   ];
 
