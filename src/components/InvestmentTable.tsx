@@ -63,7 +63,7 @@ const InvestmentTable = ({ data }: InvestmentTableProps) => {
                         {isDividendEntry 
                           ? isDividendReinvestment 
                             ? `${formatCurrency(item.amount)} (Div Reinvest)` 
-                            : `${formatCurrency(0)} (Div Received)`
+                            : `${formatCurrency(0)} (Div Received: ${formatCurrency(item.cumulativeDividends || 0)})`
                           : formatCurrency(item.amount)
                         }
                       </TableCell>

@@ -74,7 +74,7 @@ export const generateInvestmentSchedule = (
     });
   }
   
-  // Add dividend entries and process dividend reinvestment separately
+  // Add dividend entries and process dividend reinvestment only if enabled
   if (sortedStockData.some(data => data.dividend && data.dividend > 0)) {
     const dividendDates = sortedStockData
       .filter(data => data.dividend && data.dividend > 0)
@@ -101,7 +101,7 @@ export const generateInvestmentSchedule = (
       const price = data.price;
       const dividend = data.dividend;
       
-      // Calculate dividend amount based on shares owned
+      // Calculate dividend amount based on shares owned at the time
       const sharesOwned = latestEntryBeforeDividend.totalShares;
       const dividendPayment = parseFloat((sharesOwned * dividend).toFixed(2));
       
@@ -128,12 +128,12 @@ export const generateInvestmentSchedule = (
         }
       }
       
-      // Only create dividend entries if reinvestDividends is enabled or we're adding a dividend info entry
+      // Only create dividend-only entries if reinvestDividends is enabled
       if (reinvestDividends) {
         // Calculate new shares to be purchased with dividend
         const additionalShares = parseFloat((dividendPayment / price).toFixed(6));
         
-        // Update totalShares correctly
+        // Update totalShares based on the previous entry's totalShares plus the new shares
         const newTotalShares = totalShares + additionalShares;
         
         // Add dividend to total invested if reinvesting
@@ -160,21 +160,6 @@ export const generateInvestmentSchedule = (
         });
         
         processedDates.add(date); // Mark the dividend date as processed
-      } else {
-        // If not reinvesting, still add an entry to show the dividend was received
-        schedule.push({
-          date,
-          amount: 0, // No new investment
-          sharesPurchased: 0, // No new shares
-          price,
-          totalShares, // Keep total shares the same
-          totalInvested, // Keep total invested the same
-          currentValue: parseFloat((totalShares * price).toFixed(2)),
-          dividend,
-          cumulativeDividends
-        });
-        
-        processedDates.add(date);
       }
     }
   }
