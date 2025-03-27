@@ -1,3 +1,4 @@
+
 import { InvestmentFormData, InvestmentSchedule, PortfolioPerformance, StockData } from "@/types";
 
 // Generate investment schedule based on form data and stock data
@@ -133,13 +134,16 @@ export const generateInvestmentSchedule = (
         // Calculate new shares to be purchased with dividend
         const additionalShares = parseFloat((dividendPayment / price).toFixed(6));
         
-        // Update totalShares based on the previous entry's totalShares plus the new shares
-        const newTotalShares = totalShares + additionalShares;
+        // Use the latest entry's totalShares and totalInvested as the base
+        // instead of the running totals, which might be out of sync
+        const prevTotalShares = latestEntryBeforeDividend.totalShares;
+        const prevTotalInvested = latestEntryBeforeDividend.totalInvested;
         
-        // Add dividend to total invested if reinvesting
-        const newTotalInvested = totalInvested + dividendPayment;
+        // Update with the new values from this dividend reinvestment
+        const newTotalShares = prevTotalShares + additionalShares;
+        const newTotalInvested = prevTotalInvested + dividendPayment;
         
-        // Update our running totals
+        // Update our running totals for the next regular investment
         totalShares = newTotalShares;
         totalInvested = newTotalInvested;
         
