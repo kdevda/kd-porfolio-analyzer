@@ -48,17 +48,32 @@ const InvestmentTable = ({ data }: InvestmentTableProps) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayData.map((item, index) => (
-                  <TableRow key={index} className={item.dividend ? "bg-blue-50" : ""}>
-                    <TableCell>{item.date}</TableCell>
-                    <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{formatCurrency(item.price)}</TableCell>
-                    <TableCell>{item.dividend ? `${formatCurrency(item.dividend)} (Div)` : formatCurrency(item.amount)}</TableCell>
-                    <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{item.sharesPurchased.toFixed(4)}</TableCell>
-                    <TableCell>{item.totalShares.toFixed(4)}</TableCell>
-                    <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{formatCurrency(item.totalInvested)}</TableCell>
-                    <TableCell>{formatCurrency(item.currentValue)}</TableCell>
-                  </TableRow>
-                ))}
+                {displayData.map((item, index) => {
+                  const isDividendEntry = item.dividend && item.dividend > 0;
+                  const isDividendReinvestment = isDividendEntry && item.sharesPurchased > 0;
+                  
+                  return (
+                    <TableRow 
+                      key={index} 
+                      className={isDividendEntry ? (isDividendReinvestment ? "bg-blue-50" : "bg-amber-50") : ""}
+                    >
+                      <TableCell>{item.date}</TableCell>
+                      <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{formatCurrency(item.price)}</TableCell>
+                      <TableCell>
+                        {isDividendEntry 
+                          ? isDividendReinvestment 
+                            ? `${formatCurrency(item.amount)} (Div Reinvest)` 
+                            : `${formatCurrency(0)} (Div Received)`
+                          : formatCurrency(item.amount)
+                        }
+                      </TableCell>
+                      <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{item.sharesPurchased.toFixed(4)}</TableCell>
+                      <TableCell>{item.totalShares.toFixed(4)}</TableCell>
+                      <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{formatCurrency(item.totalInvested)}</TableCell>
+                      <TableCell>{formatCurrency(item.currentValue)}</TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
