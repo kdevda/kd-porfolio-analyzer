@@ -127,30 +127,33 @@ export const generateInvestmentSchedule = (
       
       // Only create dividend entries if reinvestDividends is enabled
       if (reinvestDividends) {
-      // Use the shares owned from the latest entry before this dividend date
-      const sharesOwned = latestEntryBeforeDividend.totalShares;
-    
-      // Calculate the dividend amount based on the shares owned
-      const dividendAmount = parseFloat((sharesOwned * dividend).toFixed(2));
-    
+        // Get previous entry's totalShares
+        const sharesOwned = latestEntryBeforeDividend.totalShares;
+      
+        // Calculate the dividend amount based on shares owned
+        const dividendAmount = parseFloat((sharesOwned * dividend).toFixed(2));
+      
+        // Add dividend amount to cumulative dividends
+        cumulativeDividends += dividendAmount;
+      
         if (dividendAmount > 0) {
-          // Calculate how many shares can be purchased with the dividend
-          const sharesPurchased = parseFloat((dividendAmount / price).toFixed(6));
+          // Calculate new shares to be purchased with dividend
+          const additionalShares = parseFloat((dividendAmount / price).toFixed(6));
       
-          // Update totalShares correctly by adding the purchased shares
-          totalShares += sharesPurchased;
+          // Update totalShares correctly
+          totalShares += additionalShares;
       
-          // Update totalInvested with the dividend reinvestment (additional investment)
+          // Calculate totalInvested (dividend is treated as an additional investment)
           const entryTotalInvested = latestEntryBeforeDividend.totalInvested + dividendAmount;
-      
-          // Calculate the new current value based on the updated totalShares
+          
+          // Update currentValue
           const currentValue = parseFloat((totalShares * price).toFixed(2));
       
-          // Push the new entry for the dividend reinvestment into the schedule
+          // Add or update the dividend reinvestment entry
           schedule.push({
             date,
             amount: dividendAmount,
-            sharesPurchased,
+            sharesPurchased: additionalShares,
             price,
             totalShares,
             totalInvested: entryTotalInvested,
