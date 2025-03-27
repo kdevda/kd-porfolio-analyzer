@@ -9,25 +9,31 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 
 interface InvestmentTableProps {
   data: InvestmentSchedule[];
+  showDividendEntries?: boolean;
 }
 
-const InvestmentTable = ({ data }: InvestmentTableProps) => {
+const InvestmentTable = ({ data, showDividendEntries = false }: InvestmentTableProps) => {
   const [showAll, setShowAll] = useState(false);
   const isMobile = useIsMobile();
   
+  // Filter out dividend entries if showDividendEntries is false
+  const filteredData = showDividendEntries 
+    ? data 
+    : data.filter(item => !(item.dividend && item.dividend > 0));
+  
   // Show limited entries or all based on state
-  const displayData = showAll ? data : data.slice(0, 10);
+  const displayData = showAll ? filteredData : filteredData.slice(0, 10);
   
   return (
     <BlurBackground className="p-4 md:p-6 animate-fade-in h-full">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl md:text-2xl font-medium text-gray-800">Investment Schedule</h2>
-        {data.length > 10 && (
+        {filteredData.length > 10 && (
           <button
             onClick={() => setShowAll(!showAll)}
             className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
           >
-            {showAll ? "Show Less" : `Show All (${data.length})`}
+            {showAll ? "Show Less" : `Show All (${filteredData.length})`}
           </button>
         )}
       </div>

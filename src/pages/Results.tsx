@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { InvestmentFormData, InvestmentSchedule, PortfolioPerformance } from "@/types";
@@ -27,7 +26,6 @@ const Results = () => {
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [hasDividendData, setHasDividendData] = useState(false);
   
-  // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -41,7 +39,6 @@ const Results = () => {
     if (initialStockData) {
       setStockData(initialStockData);
       
-      // Check if any entry has dividend data
       const hasDividends = initialStockData.some((entry: any) => entry.dividend && entry.dividend > 0);
       setHasDividendData(hasDividends);
     }
@@ -182,20 +179,17 @@ const Results = () => {
   const calculateTimeInMarket = () => {
     if (schedule.length < 2) return { investmentDates: 0, months: 0, years: 0 };
     
-    // Count only actual investment entries (not dividend entries with zero investment)
     const investmentEntries = schedule.filter(entry => entry.amount > 0 || entry.sharesPurchased > 0);
     const investmentDates = investmentEntries.length;
     
-    // Calculate time span
     const firstDate = new Date(schedule[0].date);
     const lastDate = new Date(schedule[schedule.length - 1].date);
     
     const diffTime = Math.abs(lastDate.getTime() - firstDate.getTime());
     const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    // More accurate calculation of months and years
-    const years = totalDays / 365.25; // Using 365.25 to account for leap years
-    const months = totalDays / 30.44; // Average days in a month
+    const years = totalDays / 365.25;
+    const months = totalDays / 30.44;
     
     return {
       investmentDates,
@@ -356,7 +350,7 @@ const Results = () => {
         
         <div className="mt-6 mb-12">
           {schedule.length > 0 && (
-            <InvestmentTable data={schedule} />
+            <InvestmentTable data={schedule} showDividendEntries={reinvestDividends} />
           )}
         </div>
       </div>
