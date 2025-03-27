@@ -127,29 +127,26 @@ export const generateInvestmentSchedule = (
       
       // Only create dividend entries if reinvestDividends is enabled
       if (reinvestDividends) {
-        // Get the shares owned from the latest entry before this dividend date
-        const sharesOwned = latestEntryBeforeDividend.totalShares;
-      
-        // Calculate the dividend amount based on the shares owned
-        const dividendAmount = parseFloat((sharesOwned * dividend).toFixed(2));
-      
-        // Add dividend amount to cumulative dividends
-        cumulativeDividends += dividendAmount;
-
+      // Use the shares owned from the latest entry before this dividend date
+      const sharesOwned = latestEntryBeforeDividend.totalShares;
+    
+      // Calculate the dividend amount based on the shares owned
+      const dividendAmount = parseFloat((sharesOwned * dividend).toFixed(2));
+    
         if (dividendAmount > 0) {
           // Calculate how many shares can be purchased with the dividend
           const sharesPurchased = parseFloat((dividendAmount / price).toFixed(6));
       
-          // Update totalShares with the new shares purchased
+          // Update totalShares correctly by adding the purchased shares
           totalShares += sharesPurchased;
       
-          // Update totalInvested (treating dividend as an additional investment)
+          // Update totalInvested with the dividend reinvestment (additional investment)
           const entryTotalInvested = latestEntryBeforeDividend.totalInvested + dividendAmount;
       
           // Calculate the new current value based on the updated totalShares
           const currentValue = parseFloat((totalShares * price).toFixed(2));
       
-          // Push the new entry for the dividend reinvestment
+          // Push the new entry for the dividend reinvestment into the schedule
           schedule.push({
             date,
             amount: dividendAmount,
@@ -162,7 +159,7 @@ export const generateInvestmentSchedule = (
             cumulativeDividends
           });
       
-          processedDates.add(date); // Mark this dividend date as processed
+          processedDates.add(date); // Mark the dividend date as processed
         }
       }
     }
