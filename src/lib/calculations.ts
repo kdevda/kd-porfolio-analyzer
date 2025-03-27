@@ -1,4 +1,3 @@
-
 import { InvestmentFormData, InvestmentSchedule, PortfolioPerformance, StockData } from "@/types";
 
 // Generate investment schedule based on form data and stock data
@@ -104,11 +103,11 @@ export const generateInvestmentSchedule = (
       
       // Calculate dividend amount based on shares owned
       const sharesOwned = latestEntryBeforeDividend.totalShares;
-      const dividendAmount = parseFloat((sharesOwned * dividend).toFixed(2));
+      const dividendPayment = parseFloat((sharesOwned * dividend).toFixed(2));
       
-      if (dividendAmount <= 0) continue;
+      if (dividendPayment <= 0) continue;
       
-      cumulativeDividends += dividendAmount;
+      cumulativeDividends += dividendPayment;
       
       // If we already have an entry for this date, update it instead of creating a new one
       if (processedDates.has(date)) {
@@ -119,9 +118,9 @@ export const generateInvestmentSchedule = (
           
           // If reinvesting dividends, add more shares
           if (reinvestDividends) {
-            const additionalShares = parseFloat((dividendAmount / price).toFixed(6));
+            const additionalShares = parseFloat((dividendPayment / price).toFixed(6));
             existingEntry.sharesPurchased += additionalShares;
-            existingEntry.amount += dividendAmount;
+            existingEntry.amount += dividendPayment;
             existingEntry.totalShares += additionalShares;
             existingEntry.currentValue = parseFloat((existingEntry.totalShares * price).toFixed(2));
           }
@@ -130,18 +129,15 @@ export const generateInvestmentSchedule = (
       }
       
       // Only create dividend entries if reinvestDividends is enabled or we're adding a dividend info entry
-      // Calculate the dividend amount based on shares owned at this point
-      const dividendAmount = parseFloat((sharesOwned * dividend).toFixed(2));
-      
       if (reinvestDividends) {
         // Calculate new shares to be purchased with dividend
-        const additionalShares = parseFloat((dividendAmount / price).toFixed(6));
+        const additionalShares = parseFloat((dividendPayment / price).toFixed(6));
         
         // Update totalShares correctly
         const newTotalShares = totalShares + additionalShares;
         
         // Add dividend to total invested if reinvesting
-        const newTotalInvested = totalInvested + dividendAmount;
+        const newTotalInvested = totalInvested + dividendPayment;
         
         // Update our running totals
         totalShares = newTotalShares;
@@ -153,7 +149,7 @@ export const generateInvestmentSchedule = (
         // Add dividend reinvestment entry
         schedule.push({
           date,
-          amount: dividendAmount,
+          amount: dividendPayment,
           sharesPurchased: additionalShares,
           price,
           totalShares: newTotalShares,
