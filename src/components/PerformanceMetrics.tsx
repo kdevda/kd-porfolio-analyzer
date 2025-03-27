@@ -16,12 +16,12 @@ const PerformanceMetrics = ({ performance, stockSymbol, hasDividendData = false 
   const isPositive = performance.totalReturn >= 0;
   const isMobile = useIsMobile();
   
-  // Update dividend display logic
-  const dividendValue = hasDividendData 
-    ? formatCurrency(performance.dividendsReceived || 0)
+  // Always show dividend value if available, regardless of reinvestment setting
+  const dividendValue = hasDividendData && performance.dividendsReceived > 0
+    ? formatCurrency(performance.dividendsReceived)
     : "Not available";
   
-  const dividendSubtitle = hasDividendData 
+  const dividendSubtitle = hasDividendData && performance.dividendsReceived > 0
     ? "Total dividends received" 
     : "Not a dividend-paying stock";
   

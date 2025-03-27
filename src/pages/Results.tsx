@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { InvestmentFormData, InvestmentSchedule, PortfolioPerformance } from "@/types";
@@ -181,17 +182,25 @@ const Results = () => {
   const calculateTimeInMarket = () => {
     if (schedule.length < 2) return { investmentDates: 0, months: 0, years: 0 };
     
+    // Count only actual investment entries (not dividend entries with zero investment)
+    const investmentEntries = schedule.filter(entry => entry.amount > 0 || entry.sharesPurchased > 0);
+    const investmentDates = investmentEntries.length;
+    
+    // Calculate time span
     const firstDate = new Date(schedule[0].date);
     const lastDate = new Date(schedule[schedule.length - 1].date);
     
-    const totalDays = (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24);
-    const years = totalDays / 365;
-    const months = totalDays / 30.44;
+    const diffTime = Math.abs(lastDate.getTime() - firstDate.getTime());
+    const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    // More accurate calculation of months and years
+    const years = totalDays / 365.25; // Using 365.25 to account for leap years
+    const months = totalDays / 30.44; // Average days in a month
     
     return {
-      investmentDates: schedule.length,
-      months: months,
-      years: years,
+      investmentDates,
+      months,
+      years,
     };
   };
   

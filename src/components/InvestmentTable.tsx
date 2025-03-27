@@ -50,22 +50,26 @@ const InvestmentTable = ({ data }: InvestmentTableProps) => {
               <TableBody>
                 {displayData.map((item, index) => {
                   const isDividendEntry = item.dividend && item.dividend > 0;
-                  const isDividendReinvestment = isDividendEntry && item.sharesPurchased > 0;
+                  const isReinvestment = isDividendEntry && item.sharesPurchased > 0;
+                  const isRegularInvestment = !isDividendEntry && item.amount > 0;
                   
                   return (
                     <TableRow 
                       key={index} 
-                      className={isDividendEntry ? (isDividendReinvestment ? "bg-blue-50" : "bg-amber-50") : ""}
+                      className={
+                        isDividendEntry 
+                          ? isReinvestment 
+                            ? "bg-blue-50" 
+                            : "bg-amber-50" 
+                          : ""
+                      }
                     >
                       <TableCell>{item.date}</TableCell>
                       <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{formatCurrency(item.price)}</TableCell>
                       <TableCell>
-                        {isDividendEntry 
-                          ? isDividendReinvestment 
-                            ? `${formatCurrency(item.amount)} (Div Reinvest)` 
-                            : `${formatCurrency(0)} (Div Received: ${formatCurrency(item.cumulativeDividends || 0)})`
-                          : formatCurrency(item.amount)
-                        }
+                        {isRegularInvestment && formatCurrency(item.amount)}
+                        {isReinvestment && `${formatCurrency(item.amount)} (Div Reinvest)`}
+                        {isDividendEntry && !isReinvestment && `${formatCurrency(0)} (Div Received)`}
                       </TableCell>
                       <TableCell className={isMobile ? "hidden md:table-cell" : ""}>{item.sharesPurchased.toFixed(4)}</TableCell>
                       <TableCell>{item.totalShares.toFixed(4)}</TableCell>

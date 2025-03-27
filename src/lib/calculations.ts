@@ -75,7 +75,7 @@ export const generateInvestmentSchedule = (
     });
   }
   
-  // Add dividend entries and process dividend reinvestment only if enabled
+  // Add dividend entries and process dividend reinvestment
   if (sortedStockData.some(data => data.dividend && data.dividend > 0)) {
     const dividendDates = sortedStockData
       .filter(data => data.dividend && data.dividend > 0)
@@ -108,6 +108,7 @@ export const generateInvestmentSchedule = (
       
       if (dividendPayment <= 0) continue;
       
+      // Always add to cumulative dividends regardless of reinvestment setting
       cumulativeDividends += dividendPayment;
       
       // If we already have an entry for this date, update it instead of creating a new one
@@ -129,13 +130,12 @@ export const generateInvestmentSchedule = (
         }
       }
       
-      // Only create dividend-only entries if reinvestDividends is enabled
+      // Create a dividend entry or reinvestment entry based on reinvestDividends setting
       if (reinvestDividends) {
         // Calculate new shares to be purchased with dividend
         const additionalShares = parseFloat((dividendPayment / price).toFixed(6));
         
         // Use the latest entry's totalShares and totalInvested as the base
-        // instead of the running totals, which might be out of sync
         const prevTotalShares = latestEntryBeforeDividend.totalShares;
         const prevTotalInvested = latestEntryBeforeDividend.totalInvested;
         
@@ -159,6 +159,22 @@ export const generateInvestmentSchedule = (
           totalShares: newTotalShares,
           totalInvested: newTotalInvested,
           currentValue,
+          dividend,
+          cumulativeDividends
+        });
+        
+        processedDates.add(date); // Mark the dividend date as processed
+      } else {
+        // Just create a dividend received entry (without reinvestment)
+        // Use the same totalShares and totalInvested as the previous entry
+        schedule.push({
+          date,
+          amount: 0, // No new investment
+          sharesPurchased: 0, // No new shares
+          price,
+          totalShares: latestEntryBeforeDividend.totalShares, // Keep shares the same
+          totalInvested: latestEntryBeforeDividend.totalInvested, // Keep investment the same
+          currentValue: parseFloat((latestEntryBeforeDividend.totalShares * price).toFixed(2)),
           dividend,
           cumulativeDividends
         });
@@ -207,26 +223,24 @@ export const calculatePerformance = (
     };
   }
   
-  const totalInvested = schedule[schedule.length - 1].totalInvested;
-  const finalValue = schedule[schedule.length - 1].currentValue;
-  const dividendsReceived = schedule[schedule.length - 1].cumulativeDividends || 0;
+  const lastEntry = schedule[schedule.length - 1];
+  const totalInvested = lastEntry.totalInvested;
+  const finalValue = lastEntry.currentValue;
+  const dividendsReceived = lastEntry.cumulativeDividends || 0;
   
-  // Total return includes dividends whether they were reinvested or not
+  // Total return calculation should reflect final value minus total invested
   const totalReturn = parseFloat((finalValue - totalInvested).toFixed(2));
   const percentageReturn = parseFloat(((totalReturn / totalInvested) * 100).toFixed(2));
   
-  // Calculate annualized return
+  // Calculate annualized return using CAGR formula
   const firstDate = new Date(schedule[0].date);
-  const lastDate = new Date(schedule[schedule.length - 1].date);
-  const yearsElapsed = (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
+  const lastDate = new Date(lastEntry.date);
+  const yearsElapsed = Math.max((lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24 * 365), 0.01); // At least 0.01 years to avoid division by zero
   
   // Use CAGR formula: (final/initial)^(1/years) - 1
-  let annualizedReturn = 0;
-  if (yearsElapsed > 0) {
-    annualizedReturn = parseFloat(((Math.pow(finalValue / totalInvested, 1 / yearsElapsed) - 1) * 100).toFixed(2));
-  } else {
-    annualizedReturn = percentageReturn;
-  }
+  const annualizedReturn = parseFloat(
+    ((Math.pow(finalValue / totalInvested, 1 / yearsElapsed) - 1) * 100).toFixed(2)
+  );
   
   return {
     totalInvested,
